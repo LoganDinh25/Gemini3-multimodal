@@ -31,17 +31,18 @@ class GeminiService:
         if GEMINI_AVAILABLE and self.api_key:
             try:
                 genai.configure(api_key=self.api_key)
-                # Try gemini-pro first, fallback to gemini-1.5-pro if available
-                try:
-                    self.model = genai.GenerativeModel("gemini-pro")
-                    self.use_real_api = True
-                except Exception:
+                # gemini-pro deprecated; use gemini-2.5-flash (stable) or gemini-2.5-pro
+                model_names = [GEMINI_MODEL, "gemini-2.5-pro", "gemini-2.0-flash", "gemini-1.5-flash"]
+                self.model = None
+                for name in model_names:
                     try:
-                        self.model = genai.GenerativeModel("gemini-1.5-pro")
+                        self.model = genai.GenerativeModel(name)
                         self.use_real_api = True
+                        break
                     except Exception:
-                        self.model = genai.GenerativeModel(GEMINI_MODEL)
-                        self.use_real_api = True
+                        continue
+                if self.model is None:
+                    raise RuntimeError("No Gemini model available")
             except Exception as e:
                 print(f"Warning: Failed to initialize Gemini API: {e}")
                 print("Falling back to mock responses")
@@ -80,8 +81,12 @@ class GeminiService:
                 
                 return response.text
             except Exception as e:
+                err_str = str(e).lower()
                 print(f"Error calling Gemini API: {e}")
-                print("Falling back to mock response")
+                if any(kw in err_str for kw in ["rate", "429", "quota", "exhausted", "resource"]):
+                    print("⚠️ Rate limit / quota exceeded - falling back to mock. Đợi 1 phút hoặc nâng quota tại console.cloud.google.com")
+                else:
+                    print("Falling back to mock response")
                 return self._mock_gemini_response(prompt, system_instruction)
         else:
             # DEMO MODE: Return structured mock response
@@ -89,7 +94,8 @@ class GeminiService:
     
     def _mock_gemini_response(self, prompt: str, system_instruction: str) -> str:
         """Mock Gemini responses for demo (remove in production)"""
-        if "normalize" in system_instruction.lower():
+        si = system_instruction.lower()
+        if "normalize" in si:
             return json.dumps({
                 "normalized_schema": {
                     "mode_mapping": {
@@ -110,12 +116,15 @@ class GeminiService:
                     "Hub capacity constraints based on regional infrastructure reports"
                 ]
             })
-        elif "explain strategy" in system_instruction.lower():
+        elif "explain strategy" in si or ("explanation" in si and "strategy" in si):
             return self._generate_strategy_explanation(prompt)
-        elif "what-if" in system_instruction.lower():
+        elif "what-if" in si or "risk analyst" in si:
             return self._generate_whatif_analysis(prompt)
+        elif "logistics advisor" in si or "optimization strategies" in si:
+            # Chat với Gemini - trả về mock thay vì placeholder
+            return self._generate_chat_mock_response(prompt)
         else:
-            return "Gemini 3 response placeholder"
+            return self._generate_chat_mock_response(prompt)
     
     def normalize_data(
         self, 
@@ -164,10 +173,11 @@ Tasks:
 3. Suggest reasonable assumptions for missing data
 4. Flag any anomalies in the data structure
 
-Return a JSON with: normalized_schema, warnings, assumptions
+IMPORTANT: Return ONLY a valid JSON object, no other text. Format:
+{{"normalized_schema": {{...}}, "warnings": ["..."], "assumptions": ["..."]}}
 """
         
-        system_instruction = "You are a data normalization expert for logistics systems. Focus on semantic standardization, not numerical ETL."
+        system_instruction = "You are a data normalization expert. Return ONLY valid JSON. No prose, no markdown, no explanation - just the JSON object."
         
         response = self._call_gemini(prompt, system_instruction)
         
@@ -373,6 +383,33 @@ Focus on practical insights based on graph structure and logistics principles.""
         else:
             return 0
     
+    def _generate_chat_mock_response(self, prompt: str) -> str:
+        """Generate mock chat response - thay cho placeholder khi không có API hoặc rate limit"""
+        prompt_lower = (prompt or "").lower()
+        if any(kw in prompt_lower for kw in ["hub", "tại sao", "why", "chọn", "selected"]):
+            return """Dựa trên kết quả tối ưu hóa, các hub được chọn dựa trên:
+- **Vị trí trung tâm** trong mạng lưới (giảm chi phí vận chuyển tổng thể)
+- **Khả năng kết nối** road–waterway (multimodal)
+- **Chi phí vận hành** và năng lực phù hợp
+
+**Lưu ý:** Đây là phản hồi demo. Để có câu trả lời chi tiết từ Gemini API, cần cấu hình `GEMINI_API_KEY` hợp lệ."""
+        if any(kw in prompt_lower for kw in ["rủi ro", "risk", "bottleneck"]):
+            return """**Rủi ro chính:**
+- Hub tập trung nhiều luồng → điểm nghẽn tiềm ẩn
+- Ràng buộc năng lực trên tuyến đường thủy
+- Thiếu dự phòng route ở khu vực phía Nam
+
+**Khuyến nghị:** Thiết lập routing dự phòng cho hub chính, giám sát utilization hàng tuần.
+
+*Phản hồi demo – cấu hình GEMINI_API_KEY để dùng API thật.*"""
+        return """Tôi có thể hỗ trợ giải thích chiến lược tối ưu hóa, rủi ro, và khuyến nghị dựa trên kết quả hiện tại.
+
+**Để có câu trả lời chi tiết từ Gemini API:**
+1. Cấu hình biến môi trường: `export GEMINI_API_KEY="your-key"`
+2. Restart app: `streamlit run app.py`
+
+*Hiện đang dùng phản hồi demo (mock) do chưa có API key hoặc gặp rate limit.*"""
+
     def _generate_strategy_explanation(self, prompt: str) -> str:
         """Generate mock strategy explanation"""
         return """

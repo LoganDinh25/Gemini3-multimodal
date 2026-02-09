@@ -73,26 +73,30 @@ class LogisticsOptimizer:
         # EXAMPLE MODEL STRUCTURE (REPLACE WITH YOUR ACTUAL GUROBI CODE)
         # ==================================================================
         
-        # Sets
-        N = self.nodes['node_id'].tolist()  # Nodes
-        A = list(zip(self.edges['from_node'], self.edges['to_node']))  # Arcs
-        K = self.demand['commodity'].unique().tolist()  # Commodities
+        # Sets - ensure UNIQUE to avoid "Duplicate keys in Model.addVars()"
+        N = list(self.nodes['node_id'].drop_duplicates().tolist())
+        arcs_raw = list(zip(self.edges['from_node'], self.edges['to_node']))
+        A = list(dict.fromkeys(arcs_raw))  # preserve order, remove duplicates
+        K = [str(c) for c in self.demand['commodity'].dropna().unique().tolist()]
+        if not K:
+            K = ['default']  # fallback if no demand
         
-        # Parameters
-        cost = {(row['from_node'], row['to_node']): row['cost'] 
-                for _, row in self.edges.iterrows()}
-        
-        time = {(row['from_node'], row['to_node']): row.get('time', row['cost']/100) 
-                for _, row in self.edges.iterrows()}
-        
-        capacity = {(row['from_node'], row['to_node']): row.get('capacity', 10000)
-                   for _, row in self.edges.iterrows()}
+        # Parameters - use same unique arc keys as A
+        cost = {}
+        time = {}
+        capacity = {}
+        for _, row in self.edges.iterrows():
+            key = (row['from_node'], row['to_node'])
+            if key not in cost:  # first occurrence only (or take min cost)
+                cost[key] = float(row.get('cost', 0) or 0)
+                time[key] = float(row.get('time', row.get('cost', 0)/100) or 0)
+                capacity[key] = float(row.get('capacity', 10000) or 10000)
         
         demand_data = {}
         for _, row in self.demand.iterrows():
-            if row['period'] == period:
-                key = (row['origin'], row['destination'], row['commodity'])
-                demand_data[key] = row['volume']
+            if int(row.get('period', 0)) == period:
+                key = (row['origin'], row['destination'], str(row.get('commodity', 'default')))
+                demand_data[key] = float(row.get('volume', 0) or 0)
         
         # Decision Variables
         # x[i,j,k] = flow of commodity k on arc (i,j)
@@ -102,10 +106,10 @@ class LogisticsOptimizer:
         y = self.model.addVars(N, name="hub", vtype=GRB.BINARY)
         
         # Objective: weighted combination of cost and time
-        obj_cost = gp.quicksum(cost[i,j] * x[i,j,k] 
+        obj_cost = gp.quicksum(cost.get((i,j), 0) * x[i,j,k] 
                               for (i,j) in A for k in K)
         
-        obj_time = gp.quicksum(time[i,j] * x[i,j,k] 
+        obj_time = gp.quicksum(time.get((i,j), 0) * x[i,j,k] 
                               for (i,j) in A for k in K)
         
         # Priority: 0=cost, 1=speed
@@ -135,8 +139,9 @@ class LogisticsOptimizer:
         
         # 2. Capacity constraints
         for (i, j) in A:
+            cap = capacity.get((i, j), 10000)
             self.model.addConstr(
-                gp.quicksum(x[i,j,k] for k in K) <= capacity[i,j],
+                gp.quicksum(x[i,j,k] for k in K) <= cap,
                 name=f"capacity_{i}_{j}"
             )
         

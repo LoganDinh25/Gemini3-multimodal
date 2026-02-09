@@ -366,16 +366,85 @@ def load_all_data(node_file, arc_file):
     )
 
 # ============================================================
-# 2.4 THỰC HIỆN LOAD
+# 2.4 THỰC HIỆN LOAD - HỖ TRỢ ĐỌC TỪ PKL
 # ============================================================
+
+import pickle
+from pathlib import Path
 
 arc_file = 'data/Mekong/arcs_remapped.csv'
 node_file = 'data/Mekong/nodes_remapped_with_coords.csv'
+data_pkl = 'data/preprocessed_data.pkl'
 
-edges_raw, OD_pairs, node_names, node_projects, node_type, node_coords, \
-node_capacity_passenger, node_capacity_goods, node_capacity_pcu_levels, node_invest_levels, \
-real_nodes, existing_hubs, potential_hubs, existing_arcs, potential_arcs, \
-normal_nodes, candidate_hubs_new, candidate_hubs_upgrade, potential_arcs_cap_0, potential_arcs_cap_up, existing_arcs_cap, real_arc_upgrade_costs = load_all_data(node_file, arc_file)
+# Kiểm tra xem đã có file pkl chưa
+if Path(data_pkl).exists():
+    print(f"\n✓ Tìm thấy file pkl: {data_pkl}")
+    print("  Đang đọc từ pkl...")
+    with open(data_pkl, 'rb') as f:
+        data_dict = pickle.load(f)
+    
+    # Unpack data
+    edges_raw = data_dict['edges_raw']
+    OD_pairs = data_dict['OD_pairs']
+    node_names = data_dict['node_names']
+    node_projects = data_dict['node_projects']
+    node_type = data_dict['node_type']
+    node_coords = data_dict['node_coords']
+    node_capacity_passenger = data_dict['node_capacity_passenger']
+    node_capacity_goods = data_dict['node_capacity_goods']
+    node_capacity_pcu_levels = data_dict['node_capacity_pcu_levels']
+    node_invest_levels = data_dict['node_invest_levels']
+    real_nodes = data_dict['real_nodes']
+    existing_hubs = data_dict['existing_hubs']
+    potential_hubs = data_dict['potential_hubs']
+    existing_arcs = data_dict['existing_arcs']
+    potential_arcs = data_dict['potential_arcs']
+    normal_nodes = data_dict['normal_nodes']
+    candidate_hubs_new = data_dict['candidate_hubs_new']
+    candidate_hubs_upgrade = data_dict['candidate_hubs_upgrade']
+    potential_arcs_cap_0 = data_dict['potential_arcs_cap_0']
+    potential_arcs_cap_up = data_dict['potential_arcs_cap_up']
+    existing_arcs_cap = data_dict['existing_arcs_cap']
+    real_arc_upgrade_costs = data_dict['real_arc_upgrade_costs']
+    print("  ✓ Đã đọc xong từ pkl!")
+else:
+    print(f"\n  Không tìm thấy file pkl: {data_pkl}")
+    print("  Đang load từ CSV...")
+    edges_raw, OD_pairs, node_names, node_projects, node_type, node_coords, \
+    node_capacity_passenger, node_capacity_goods, node_capacity_pcu_levels, node_invest_levels, \
+    real_nodes, existing_hubs, potential_hubs, existing_arcs, potential_arcs, \
+    normal_nodes, candidate_hubs_new, candidate_hubs_upgrade, potential_arcs_cap_0, potential_arcs_cap_up, existing_arcs_cap, real_arc_upgrade_costs = load_all_data(node_file, arc_file)
+    
+    # Lưu vào pkl để lần sau dùng
+    print(f"\n  Đang lưu vào pkl: {data_pkl}...")
+    Path(data_pkl).parent.mkdir(parents=True, exist_ok=True)
+    data_dict = {
+        'edges_raw': edges_raw,
+        'OD_pairs': OD_pairs,
+        'node_names': node_names,
+        'node_projects': node_projects,
+        'node_type': node_type,
+        'node_coords': node_coords,
+        'node_capacity_passenger': node_capacity_passenger,
+        'node_capacity_goods': node_capacity_goods,
+        'node_capacity_pcu_levels': node_capacity_pcu_levels,
+        'node_invest_levels': node_invest_levels,
+        'real_nodes': real_nodes,
+        'existing_hubs': existing_hubs,
+        'potential_hubs': potential_hubs,
+        'existing_arcs': existing_arcs,
+        'potential_arcs': potential_arcs,
+        'normal_nodes': normal_nodes,
+        'candidate_hubs_new': candidate_hubs_new,
+        'candidate_hubs_upgrade': candidate_hubs_upgrade,
+        'potential_arcs_cap_0': potential_arcs_cap_0,
+        'potential_arcs_cap_up': potential_arcs_cap_up,
+        'existing_arcs_cap': existing_arcs_cap,
+        'real_arc_upgrade_costs': real_arc_upgrade_costs,
+    }
+    with open(data_pkl, 'wb') as f:
+        pickle.dump(data_dict, f)
+    print(f"  ✓ Đã lưu xong!")
 
 T = [1, 2]
 T_len = len(T)
@@ -789,296 +858,340 @@ def dijkstra_multi_target(G_adj, targets):
 
     return dist
 
+# Kiểm tra xem đã có file pkl chưa (để skip CELL 4 nếu cần)
+paths_pkl_check = 'data/paths_data.pkl'
+Lmin_dict_from_pkl = None
+
+if Path(paths_pkl_check).exists():
+    try:
+        with open(paths_pkl_check, 'rb') as f:
+            paths_data_check = pickle.load(f)
+        if 'Lmin_dict' in paths_data_check:
+            Lmin_dict_from_pkl = paths_data_check['Lmin_dict']
+            print(f"\n✓ Tìm thấy Lmin_dict trong pkl, sẽ skip CELL 4 nếu dùng pkl")
+    except Exception as e:
+        print(f"  ⚠️ Không thể đọc pkl: {e}")
+
 # ------------------------------------------------------------
 # 4.1 Build reverse graph once
 # ------------------------------------------------------------
-G_rev = build_reverse_graph(G_exp)
-print(f"[CELL 4] Reverse graph built: {len(G_rev)} keys")
+if Lmin_dict_from_pkl is None:
+    G_rev = build_reverse_graph(G_exp)
+    print(f"[CELL 4] Reverse graph built: {len(G_rev)} keys")
 
-# ------------------------------------------------------------
-# 4.2 Compute L_min for each OD
-#   L_min(comm,o,d) = min_{origin_state in {(o,0),(o,1),(o,2),o}} dist(origin_state -> any target_state)
-#   targets_of_d = {(d,0),(d,1),(d,2),d}  (tùy bạn)
-# ------------------------------------------------------------
-def origin_states(o):
-    # origin có thể là node thật "o" hoặc trạng thái (o,1)/(o,2)
-    return [o, (o, 1), (o, 2)]
+    # ------------------------------------------------------------
+    # 4.2 Compute L_min for each OD
+    #   L_min(comm,o,d) = min_{origin_state in {(o,0),(o,1),(o,2),o}} dist(origin_state -> any target_state)
+    #   targets_of_d = {(d,0),(d,1),(d,2),d}  (tùy bạn)
+    # ------------------------------------------------------------
+    def origin_states(o):
+        # origin có thể là node thật "o" hoặc trạng thái (o,1)/(o,2)
+        return [o, (o, 1), (o, 2)]
 
-def dest_targets(d):
-    # destination có thể đến trực tiếp node d hoặc các trạng thái (d,1)/(d,2)
-    # (d,0) trong code mẫu của bạn thực ra "d" (node thật). Ta giữ cả d cho chắc.
-    return [d, (d, 1), (d, 2)]
+    def dest_targets(d):
+        # destination có thể đến trực tiếp node d hoặc các trạng thái (d,1)/(d,2)
+        # (d,0) trong code mẫu của bạn thực ra "d" (node thật). Ta giữ cả d cho chắc.
+        return [d, (d, 1), (d, 2)]
 
-Lmin_dict = {}
+    Lmin_dict = {}
 
-inf_count = 0
-total_count = 0
+    inf_count = 0
+    total_count = 0
 
-for comm, pairs in OD_pairs.items():
-    for o, d in pairs:
-        total_count += 1
+    for comm, pairs in OD_pairs.items():
+        for o, d in pairs:
+            total_count += 1
 
-        # distances FROM any node TO destination targets in original graph
-        dist_to_d = dijkstra_multi_target(G_rev, dest_targets(d))
+            # distances FROM any node TO destination targets in original graph
+            dist_to_d = dijkstra_multi_target(G_rev, dest_targets(d))
 
-        # L_min = min distance over origin states
-        L_min = min(dist_to_d.get(s, float("inf")) for s in origin_states(o))
+            # L_min = min distance over origin states
+            L_min = min(dist_to_d.get(s, float("inf")) for s in origin_states(o))
 
-        Lmin_dict[(comm, o, d)] = L_min
-        if math.isinf(L_min):
-            inf_count += 1
+            Lmin_dict[(comm, o, d)] = L_min
+            if math.isinf(L_min):
+                inf_count += 1
 
-print(f" Đã tính L_min cho {len(Lmin_dict)} cặp O-D | unreachable = {inf_count}/{total_count}")
+    print(f" Đã tính L_min cho {len(Lmin_dict)} cặp O-D | unreachable = {inf_count}/{total_count}")
 
-# (optional) in thử vài kết quả
-sample = list(Lmin_dict.items())[:10]
-print("\nVí dụ 10 L_min đầu tiên:")
-for (comm, o, d), val in sample:
-    print(f"  {comm}: {o} -> {d} | L_min = {val if not math.isinf(val) else 'INF'}")
+    # (optional) in thử vài kết quả
+    sample = list(Lmin_dict.items())[:10]
+    print("\nVí dụ 10 L_min đầu tiên:")
+    for (comm, o, d), val in sample:
+        print(f"  {comm}: {o} -> {d} | L_min = {val if not math.isinf(val) else 'INF'}")
+else:
+    Lmin_dict = Lmin_dict_from_pkl
+    print(f"\n✓ Đã có Lmin_dict từ pkl, skip CELL 4")
 
 # ============================================
 # CELL 5: TÍNH Near optimal CHO TỪNG O-D (từ 2026_ToyExample.ipynb)
+# HỖ TRỢ ĐỌC TỪ PKL NẾU ĐÃ CÓ
 # ============================================
 
 print("\n" + "="*80)
 print("CELL 5: TÍNH NEAR-OPTIMAL PATHS CHO TỪNG O-D")
 print("="*80)
 
-EPSILON = 0.2
+paths_pkl = 'data/paths_data.pkl'
+skip_path_calculation = False
+
+# Kiểm tra xem đã có file pkl chưa
+if Path(paths_pkl).exists():
+    print(f"\n✓ Tìm thấy file pkl: {paths_pkl}")
+    print("  Đang đọc paths từ pkl...")
+    with open(paths_pkl, 'rb') as f:
+        paths_data = pickle.load(f)
+    
+    paths = paths_data['paths']
+    if 'Lmin_dict' in paths_data and Lmin_dict is None:
+        Lmin_dict = paths_data['Lmin_dict']
+    print("  ✓ Đã đọc xong paths từ pkl!")
+    print(f"  ✓ Số lượng paths: {sum(len(p) for p in paths.values())}")
+    
+    # Skip tính toán paths, đi thẳng đến phần sau
+    skip_path_calculation = True
+
+EPSILON = 0.5   # Khớp với notebook mẫu (Data Model _ 2026-Feb_05_eps_05.ipynb)
 MAX_PATHS_PER_OD = 5000
 
-def near_optimal_dfs(G, start_node, target_nodes, L_min, epsilon=EPSILON, max_paths=100):
-    cutoff = L_min * (1.0 + float(epsilon))
-    results = []
-    stack = [(start_node, 0.0, [start_node])]  # (node, cost, path)
+if not skip_path_calculation:
+    def near_optimal_dfs(G, start_node, target_nodes, L_min, epsilon=EPSILON, max_paths=100):
+        cutoff = L_min * (1.0 + float(epsilon))
+        results = []
+        stack = [(start_node, 0.0, [start_node])]  # (node, cost, path)
 
-    while stack and len(results) < max_paths:
-        node, cost, path = stack.pop()
+        while stack and len(results) < max_paths:
+            node, cost, path = stack.pop()
 
-        if cost > cutoff:
-            continue
-
-        if node in target_nodes:
-            results.append((path[:], cost))
-            continue
-
-        for neigh, w, edge_type in G.get(node, []):
-            if neigh in path:  # tránh vòng
-                continue
-            new_cost = cost + float(w)
-            if new_cost > cutoff:
-                continue
-            stack.append((neigh, new_cost, path + [neigh]))
-
-    return results[:max_paths]
-
-near_optimal_paths = {}
-total_paths = 0
-unreachable = 0
-
-for comm, pairs in OD_pairs.items():
-    near_optimal_paths[comm] = {}
-
-    for o, d in pairs:
-        L_min = Lmin_dict.get((comm, o, d), float("inf"))
-        if L_min == float("inf"):
-            unreachable += 1
-            continue
-
-        # start/end đều là node thật
-        start_node = o
-        target_nodes = {d}
-
-        # nếu origin không có outgoing trong expanded graph thì bỏ
-        if start_node not in G_exp:
-            near_optimal_paths[comm][(o, d)] = []
-            continue
-
-        paths = near_optimal_dfs(
-            G_exp, start_node, target_nodes, L_min,
-            epsilon=EPSILON, max_paths=MAX_PATHS_PER_OD
-        )
-
-        # loại trùng
-        seen = set()
-        unique_paths = []
-        for path, cost in sorted(paths, key=lambda x: x[1]):
-            key = tuple(path)
-            if key in seen:
-                continue
-            seen.add(key)
-            unique_paths.append((path, cost))
-            if len(unique_paths) >= MAX_PATHS_PER_OD:
-                break
-
-        near_optimal_paths[comm][(o, d)] = unique_paths
-        total_paths += len(unique_paths)
-
-print(f"Hoàn tất! Tìm được {total_paths} near-optimal paths (ε={EPSILON})")
-print(f"   - Unreachable OD (L_min=INF): {unreachable}")
-
-# LƯU DỮ LIỆU PATHS
-import pickle
-with open('near_optimal_paths.pkl', 'wb') as f:
-    pickle.dump((near_optimal_paths, node_names, node_projects, edges_raw), f)
-print("Đã lưu paths vào near_optimal_paths.pkl")
-
-
-def token_to_node(tok):
-    """(i,m) -> 'i^m', int stays int"""
-    if isinstance(tok, tuple) and len(tok) == 2:
-        i, m = tok
-        return f"{i}^{m}"
-    return tok
-
-def seq_to_arcs(seq):
-    nodes = [token_to_node(tok) for tok in seq]
-    return [(nodes[i], nodes[i+1]) for i in range(len(nodes)-1)]
-
-def build_paths_from_near_optimal(near_optimal_paths):
-    """
-    near_optimal_paths[comm][(o,d)] = list of (seq, cost)
-    return paths[(comm,(o,d))] = list of paths; each path is list of arcs [(u,v),...]
-    """
-    paths = {}
-    for comm, od_dict in near_optimal_paths.items():
-        for od, seq_cost_list in od_dict.items():
-            expanded = [seq_to_arcs(seq) for (seq, cost) in seq_cost_list]
-
-            # sanity check: start/end must match od
-            o, d = od
-            for i, p in enumerate(expanded):
-                s, e = p[0][0], p[-1][1]
-                if s != o or e != d:
-                    raise ValueError(
-                        f"[BUG] {comm} od={od} path{i} has start={s}, end={e}"
-                    )
-
-            paths[(comm, od)] = expanded  # mỗi OD có list riêng
-    return paths
-
-# ====== USE ======
-paths = build_paths_from_near_optimal(near_optimal_paths)
-
-print("Number of paths for g1,(1,5):", len(paths[('g1',(0,14))]))
-print("Example endpoints:", paths[('g1',(0,14))][0][0][0], "->", paths[('g1',(0,14))][0][-1][1])
-
-
-import itertools
-import re
-
-def generate_all_unique_paths_with_through_hubs(paths_list, H):
-    """
-    Input:
-        paths_list : list of paths
-            mỗi path là list các arc [(u,v), ...]
-        H : list hubs (ví dụ [3,4,6])
-
-    Output:
-        unique_paths : list of unique paths (list of arcs)
-    """
-
-    def parse_virtual(node):
-        """'3^2' -> (3,2), else None"""
-        if not isinstance(node, str):
-            return None
-        m = re.fullmatch(r"(\d+)\^(\d+)", node)
-        if not m:
-            return None
-        return int(m.group(1)), int(m.group(2))
-
-    all_generated = []
-
-    for base_path in paths_list:
-        n = len(base_path)
-
-        # --- tìm các block hub có thể through ---
-        blocks = []  # mỗi block: {start, through_arc}
-        for i in range(n - 2):
-            (u1, v1) = base_path[i]
-            (u2, v2) = base_path[i + 1]
-            (u3, v3) = base_path[i + 2]
-
-            # pattern: (prev -> h^m), (h^m -> h), (h -> next^m)
-            hv = parse_virtual(v1)
-            if hv is None:
-                continue
-            h, mode = hv
-            if h not in H:
-                continue
-            if (u2, v2) != (v1, h):
-                continue
-            if u3 != h:
+            if cost > cutoff:
                 continue
 
-            nv = parse_virtual(v3)
-            if nv is None:
-                continue
-            _, mode2 = nv
-            if mode2 != mode:
+            if node in target_nodes:
+                results.append((path[:], cost))
                 continue
 
-            blocks.append({
-                "start": i,
-                "through_arc": (v1, v3)  # (h^m -> next^m)
-            })
+            for neigh, w, edge_type in G.get(node, []):
+                if neigh in path:  # tránh vòng
+                    continue
+                new_cost = cost + float(w)
+                if new_cost > cutoff:
+                    continue
+                stack.append((neigh, new_cost, path + [neigh]))
 
-        # nếu không có hub nào thì giữ nguyên
-        if not blocks:
-            all_generated.append(base_path)
-            continue
+        return results[:max_paths]
 
-        # --- sinh tất cả combination không chồng block ---
-        for mask in itertools.product([0, 1], repeat=len(blocks)):
-            chosen = [blocks[j] for j, b in enumerate(mask) if b == 1]
+    near_optimal_paths = {}
+    total_paths = 0
+    unreachable = 0
 
-            # check overlap
-            used = set()
-            valid = True
-            for b in chosen:
-                cover = {b["start"], b["start"] + 1, b["start"] + 2}
-                if used & cover:
-                    valid = False
+    for comm, pairs in OD_pairs.items():
+        near_optimal_paths[comm] = {}
+
+        for o, d in pairs:
+            L_min = Lmin_dict.get((comm, o, d), float("inf"))
+            if L_min == float("inf"):
+                unreachable += 1
+                continue
+
+            # start/end đều là node thật
+            start_node = o
+            target_nodes = {d}
+
+            # nếu origin không có outgoing trong expanded graph thì bỏ
+            if start_node not in G_exp:
+                near_optimal_paths[comm][(o, d)] = []
+                continue
+
+            paths = near_optimal_dfs(
+                G_exp, start_node, target_nodes, L_min,
+                epsilon=EPSILON, max_paths=MAX_PATHS_PER_OD
+            )
+
+            # loại trùng
+            seen = set()
+            unique_paths = []
+            for path, cost in sorted(paths, key=lambda x: x[1]):
+                key = tuple(path)
+                if key in seen:
+                    continue
+                seen.add(key)
+                unique_paths.append((path, cost))
+                if len(unique_paths) >= MAX_PATHS_PER_OD:
                     break
-                used |= cover
-            if not valid:
+
+            near_optimal_paths[comm][(o, d)] = unique_paths
+            total_paths += len(unique_paths)
+
+    print(f"Hoàn tất! Tìm được {total_paths} near-optimal paths (ε={EPSILON})")
+    print(f"   - Unreachable OD (L_min=INF): {unreachable}")
+
+    def token_to_node(tok):
+        """(i,m) -> 'i^m', int stays int"""
+        if isinstance(tok, tuple) and len(tok) == 2:
+            i, m = tok
+            return f"{i}^{m}"
+        return tok
+
+    def seq_to_arcs(seq):
+        nodes = [token_to_node(tok) for tok in seq]
+        return [(nodes[i], nodes[i+1]) for i in range(len(nodes)-1)]
+
+    def build_paths_from_near_optimal(near_optimal_paths):
+        """
+        near_optimal_paths[comm][(o,d)] = list of (seq, cost)
+        return paths[(comm,(o,d))] = list of paths; each path is list of arcs [(u,v),...]
+        """
+        paths = {}
+        for comm, od_dict in near_optimal_paths.items():
+            for od, seq_cost_list in od_dict.items():
+                expanded = [seq_to_arcs(seq) for (seq, cost) in seq_cost_list]
+
+                # sanity check: start/end must match od
+                o, d = od
+                for i, p in enumerate(expanded):
+                    s, e = p[0][0], p[-1][1]
+                    if s != o or e != d:
+                        raise ValueError(
+                            f"[BUG] {comm} od={od} path{i} has start={s}, end={e}"
+                        )
+
+                paths[(comm, od)] = expanded  # mỗi OD có list riêng
+        return paths
+
+    # ====== USE ======
+    paths = build_paths_from_near_optimal(near_optimal_paths)
+
+    print("Number of paths for g1,(1,5):", len(paths[('g1',(0,14))]))
+    print("Example endpoints:", paths[('g1',(0,14))][0][0][0], "->", paths[('g1',(0,14))][0][-1][1])
+
+    import itertools
+    import re
+
+    def generate_all_unique_paths_with_through_hubs(paths_list, H):
+        """
+        Input:
+            paths_list : list of paths
+                mỗi path là list các arc [(u,v), ...]
+            H : list hubs (ví dụ [3,4,6])
+
+        Output:
+            unique_paths : list of unique paths (list of arcs)
+        """
+        def parse_virtual(node):
+            """'3^2' -> (3,2), else None"""
+            if not isinstance(node, str):
+                return None
+            m = re.fullmatch(r"(\d+)\^(\d+)", node)
+            if not m:
+                return None
+            return int(m.group(1)), int(m.group(2))
+
+        all_generated = []
+
+        for base_path in paths_list:
+            n = len(base_path)
+
+            # --- tìm các block hub có thể through ---
+            blocks = []  # mỗi block: {start, through_arc}
+            for i in range(n - 2):
+                (u1, v1) = base_path[i]
+                (u2, v2) = base_path[i + 1]
+                (u3, v3) = base_path[i + 2]
+
+                # pattern: (prev -> h^m), (h^m -> h), (h -> next^m)
+                hv = parse_virtual(v1)
+                if hv is None:
+                    continue
+                h, mode = hv
+                if h not in H:
+                    continue
+                if (u2, v2) != (v1, h):
+                    continue
+                if u3 != h:
+                    continue
+
+                nv = parse_virtual(v3)
+                if nv is None:
+                    continue
+                _, mode2 = nv
+                if mode2 != mode:
+                    continue
+
+                blocks.append({
+                    "start": i,
+                    "through_arc": (v1, v3)  # (h^m -> next^m)
+                })
+
+            # nếu không có hub nào thì giữ nguyên
+            if not blocks:
+                all_generated.append(base_path)
                 continue
 
-            chosen_by_start = {b["start"]: b for b in chosen}
+            # --- sinh tất cả combination không chồng block ---
+            for mask in itertools.product([0, 1], repeat=len(blocks)):
+                chosen = [blocks[j] for j, b in enumerate(mask) if b == 1]
 
-            # build new path
-            new_path = []
-            i = 0
-            while i < n:
-                if i in chosen_by_start:
-                    new_path.append(base_path[i])                 # keep (prev -> h^m)
-                    new_path.append(chosen_by_start[i]["through_arc"])
-                    i += 3
-                else:
-                    new_path.append(base_path[i])
-                    i += 1
+                # check overlap
+                used = set()
+                valid = True
+                for b in chosen:
+                    cover = {b["start"], b["start"] + 1, b["start"] + 2}
+                    if used & cover:
+                        valid = False
+                        break
+                    used |= cover
+                if not valid:
+                    continue
 
-            all_generated.append(new_path)
+                chosen_by_start = {b["start"]: b for b in chosen}
 
-    # --- deduplicate ---
-    unique_paths = []
-    seen = set()
-    for p in all_generated:
-        key = tuple(p)
-        if key not in seen:
-            seen.add(key)
-            unique_paths.append(p)
+                # build new path
+                new_path = []
+                i = 0
+                while i < n:
+                    if i in chosen_by_start:
+                        new_path.append(base_path[i])                 # keep (prev -> h^m)
+                        new_path.append(chosen_by_start[i]["through_arc"])
+                        i += 3
+                    else:
+                        new_path.append(base_path[i])
+                        i += 1
 
-    return unique_paths
+                all_generated.append(new_path)
 
-all_pairs = {}
-for g, od_list in OD_pairs.items():
-    for od in od_list:
-        key = (g, od)
-        base_paths = paths[key]
-        all_pairs[key] = generate_all_unique_paths_with_through_hubs(base_paths, H)
+        # --- deduplicate ---
+        unique_paths = []
+        seen = set()
+        for p in all_generated:
+            key = tuple(p)
+            if key not in seen:
+                seen.add(key)
+                unique_paths.append(p)
 
-paths = all_pairs
+        return unique_paths
+
+    all_pairs = {}
+    for g, od_list in OD_pairs.items():
+        for od in od_list:
+            key = (g, od)
+            base_paths = paths[key]
+            all_pairs[key] = generate_all_unique_paths_with_through_hubs(base_paths, H)
+
+    paths = all_pairs
+    
+    # Lưu paths vào pkl sau CELL 5
+    print("\n  Đang lưu paths vào pkl...")
+    Path(paths_pkl).parent.mkdir(parents=True, exist_ok=True)
+    paths_data = {
+        'paths': paths,
+        'Lmin_dict': Lmin_dict,
+        'node_names': node_names,
+        'node_projects': node_projects,
+        'edges_raw': edges_raw,
+    }
+    with open(paths_pkl, 'wb') as f:
+        pickle.dump(paths_data, f)
+    print(f"  ✓ Đã lưu paths vào: {paths_pkl}")
 
 
 # Hub capacity levels 
@@ -2014,7 +2127,69 @@ for a in A_tilde:
 
 print(f"  ✓ Đã tính chi phí nâng cấp cho {len(A_tilde)} potential arcs")
 print(f"  - Hub upgrade cost:         biến số trong objective")
-print(f"  - Arc upgrade cost:         biến số trong objective")
+
+# ============================================
+# 9. THIẾT LẬP RÀNG BUỘC (CRITICAL - THIẾU SẼ RA KẾT QUẢ 0)
+# ============================================
+# Nguồn: Data Model _ 2026-Feb_05_eps_05.ipynb - Section 9
+print("\n" + "="*60)
+print("9. THIẾT LẬP RÀNG BUỘC (THEO NOTEBOOK MẪU)")
+print("="*60)
+
+# 9.1 Path flow balance - BẮT BUỘC: Tổng v_path cho mỗi (g,od,t) = 1
+# Không có ràng buộc này, solver sẽ đặt tất cả v_path=0 → cost=0
+print("\n[1] Path flow balance (sum v_path = 1 cho mỗi (g,od,t)):")
+path_flow_count = 0
+for g, od_pairs_list in OD_pairs.items():
+    for od in od_pairs_list:
+        for t in T:
+            model.addConstr(
+                gp.quicksum(v_path[(g, od, idx, t)] for idx in range(len(paths[(g, od)]))) == 1,
+                name=f"path_flow_balance_{g}_{od[0]}_{od[1]}_t{t}"
+            )
+            path_flow_count += 1
+print(f"  ✓ Đã thêm {path_flow_count} ràng buộc path flow balance")
+
+# 9.2 Hub level: mỗi hub phải chọn đúng 1 level mỗi period
+print("\n[2] Single level per hub per period:")
+for h in new_hubs:
+    for t in T:
+        model.addConstr(
+            gp.quicksum(y_h[(h, l, t)] for l in [0, 1, 2, 3] if (h, l, t) in y_h) == 1,
+            name=f"hub_level_new_{h}_t{t}"
+        )
+for h in H_tilde:
+    for t in T:
+        model.addConstr(
+            gp.quicksum(y_h[(h, l, t)] for l in [0, 1, 2] if (h, l, t) in y_h) == 1,
+            name=f"hub_level_pot_{h}_t{t}"
+        )
+for h in H0:
+    for t in T:
+        model.addConstr(y_h[(h, 0, t)] == 1, name=f"hub{h}_always_level0_t{t}")
+        for l in [1, 2]:
+            if (h, l, t) in y_h:
+                model.addConstr(y_h[(h, l, t)] == 0, name=f"hub{h}_no_upgrade_{l}_t{t}")
+print(f"  ✓ Đã thêm ràng buộc single level cho hubs")
+
+# 9.3 Arc level: mỗi arc phải chọn đúng 1 level mỗi period
+print("\n[3] Single level per arc per period:")
+for a in A_tilde:
+    for t in T:
+        model.addConstr(
+            gp.quicksum(y_a[(a[0], a[1], l, t)] for l in [0, 1]) == 1,
+            name=f"arc_level_{a[0]}_{a[1]}_t{t}"
+        )
+print(f"  ✓ Đã thêm ràng buộc single level cho arcs")
+
+# 9.4 Cập nhật objective để BAO GỒM hub_upgrade_cost và arc_upgrade_cost
+print("\n[4] Cập nhật objective (thêm hub + arc upgrade cost):")
+total_cost_full = service_cost + transport_cost + mode_switch_cost + hub_upgrade_cost + arc_upgrade_cost
+model.setObjective(total_cost_full, GRB.MINIMIZE)
+print(f"  ✓ Objective đã bao gồm: service + transport + mode_switch + hub_upgrade + arc_upgrade")
+
+print(f"\n✓ ĐÃ THIẾT LẬP XONG CÁC RÀNG BUỘC CƠ BẢN")
+
 # ============================================
 # 11. SOLVE AND DISPLAY RESULTS (ĐÃ CẬP NHẬT)
 # ============================================
@@ -2422,6 +2597,403 @@ if model.status in [GRB.OPTIMAL, GRB.TIME_LIMIT]:
     print(f"\n{'='*65}")
     print(f"ALL DONE! Total runtime: {solve_time:.2f} seconds ({solve_time/60:.2f} minutes)")
     print(f"{'='*65}")
+    
+    # ============================================
+    # EXPORT RESULTS TO JSON FOR STREAMLIT APP
+    # ============================================
+    import json
+    from pathlib import Path
+    
+    def extract_real_node(node):
+        """Extract real node ID from virtual node representation"""
+        if isinstance(node, int):
+            return node
+        if isinstance(node, str) and '^' in node:
+            return int(node.split('^')[0])
+        if isinstance(node, tuple):
+            return node[0] if isinstance(node[0], int) else None
+        return None
+    
+    def export_results_to_json(period: int = 1, output_dir: str = "data/Mekong"):
+        """Export optimization results to JSON format for Streamlit app"""
+        print(f"\n{'='*65}")
+        print(f"EXPORTING RESULTS TO JSON FOR PERIOD {period}...")
+        print(f"{'='*65}")
+        print(f"Debug: T = {T}, period = {period}")
+        print(f"Debug: H = {H}, H_tilde = {H_tilde}")
+        print(f"Debug: y_h keys sample: {list(y_h.keys())[:5] if y_h else 'EMPTY'}")
+        print(f"Debug: v_path keys sample: {list(v_path.keys())[:5] if v_path else 'EMPTY'}")
+        
+        # Map commodity IDs to names
+        commodity_map = {'g1': 'Passenger', 'g2': 'Rice', 'g3': 'Fisheries', 'g4': 'Fruits & Vegetables'}
+        
+        # 1. Extract selected hubs (hubs with level > 0 in requested period)
+        selected_hubs = []
+        hub_levels = {}
+        print(f"\nExtracting hubs for period {period}...")
+        for h in H:
+            hub_level = None
+            capacity = 0
+            for l in [0, 1, 2, 3]:
+                key = (h, l, period)
+                if key in y_h:
+                    val = y_h[key].X
+                    if val > 0.5:
+                        hub_level = l
+                        if h in L_h and l in L_h[h]:
+                            capacity = L_h[h][l]
+                        print(f"  Hub {h}: level {l} selected (X={val:.3f}, capacity={capacity:,.0f})")
+                        break
+            if hub_level is not None and hub_level > 0:
+                if h not in selected_hubs:
+                    selected_hubs.append(h)
+                hub_levels[str(h)] = {
+                    "hub": h,
+                    "period": period,
+                    "level": hub_level,
+                    "capacity": capacity
+                }
+        
+        print(f"Selected hubs: {selected_hubs}")
+        
+        # 2. Extract arc upgrades
+        arc_upgrades = []
+        for a in A_tilde:
+            # Determine mode from arc
+            mode = 'road'
+            if isinstance(a[0], str) and '^2' in str(a[0]):
+                mode = 'waterway'
+            elif isinstance(a[1], str) and '^2' in str(a[1]):
+                mode = 'waterway'
+            elif isinstance(a[0], tuple) and len(a[0]) > 1 and a[0][1] == 2:
+                mode = 'waterway'
+            elif isinstance(a[1], tuple) and len(a[1]) > 1 and a[1][1] == 2:
+                mode = 'waterway'
+            
+            if (a[0], a[1], 1, period) in y_a and y_a[(a[0], a[1], 1, period)].X > 0.5:
+                from_node = extract_real_node(a[0])
+                to_node = extract_real_node(a[1])
+                if from_node is not None and to_node is not None:
+                    arc_upgrades.append({
+                        "from": from_node,
+                        "to": to_node,
+                        "mode": mode,
+                        "period": period
+                    })
+        
+        # 3. Extract top routes from v_path
+        top_routes = []
+        route_id = 1
+        
+        print(f"\nExtracting routes for period {period}...")
+        routes_found = 0
+        for g, od_pairs_list in OD_pairs.items():
+            commodity_name = commodity_map.get(g, g)
+            print(f"  Commodity {g} ({commodity_name}): {len(od_pairs_list)} OD pairs")
+            for od in od_pairs_list:
+                if (g, od, period) not in w_gk:
+                    continue
+                demand = w_gk[(g, od, period)]
+                if demand == 0:
+                    continue
+                
+                if (g, od) not in paths:
+                    continue
+                
+                for idx in range(len(paths[(g, od)])):
+                    key = (g, od, idx, period)
+                    if key not in v_path:
+                        continue
+                    path_flow_ratio = v_path[key]
+                    flow_val = path_flow_ratio.X
+                    if flow_val > 0.001:  # Flow > 0.1% (lower threshold)
+                        routes_found += 1
+                        if routes_found <= 3:  # Debug first 3 routes
+                            print(f"    Route {routes_found}: {od}, path_idx={idx}, flow_ratio={flow_val:.6f}, demand={demand:.0f}")
+                        path_str = paths[(g, od)][idx]
+                        
+                        # Convert path to simple node list (extract real nodes)
+                        simple_path = []
+                        seen_nodes = set()
+                        for arc in path_str:
+                            u = arc[0]
+                            v = arc[1]
+                            u_real = extract_real_node(u)
+                            v_real = extract_real_node(v)
+                            if u_real is not None and u_real not in seen_nodes:
+                                simple_path.append(u_real)
+                                seen_nodes.add(u_real)
+                            if v_real is not None and v_real not in seen_nodes:
+                                simple_path.append(v_real)
+                                seen_nodes.add(v_real)
+                        
+                        if len(simple_path) < 2:
+                            continue
+                        
+                        # Determine mode
+                        path_modes = set()
+                        for arc in path_str:
+                            u_str = str(arc[0])
+                            if '^1' in u_str:
+                                path_modes.add('road')
+                            elif '^2' in u_str:
+                                path_modes.add('water')
+                        
+                        if len(path_modes) > 1:
+                            mode = 'multi-modal'
+                        elif 'road' in path_modes:
+                            mode = 'road'
+                        elif 'water' in path_modes:
+                            mode = 'water'
+                        else:
+                            mode = 'road'  # default
+                        
+                        # Calculate cost and time
+                        path_transport_cost = calculate_transport_cost(path_str)
+                        path_cost = path_transport_cost * demand * path_flow_ratio.X
+                        path_time = path_transport_cost / 100  # Estimate time from cost
+                        
+                        flow_val = float(demand * path_flow_ratio.X)
+                        top_routes.append({
+                            "route_id": route_id,
+                            "path": simple_path,
+                            "commodity": commodity_name,
+                            "mode": mode,
+                            "cost": float(path_cost),
+                            "time": float(path_time),
+                            "flow": flow_val,
+                            "flow_ratio": float(path_flow_ratio.X),
+                            "od_pair": [od[0], od[1]],
+                            "demand_od": float(demand)
+                        })
+                        route_id += 1
+        
+        print(f"  Total routes found: {routes_found}")
+        
+        # Sort routes by flow (descending) and take top 20
+        top_routes.sort(key=lambda x: x['flow'], reverse=True)
+        top_routes = top_routes[:20]
+        print(f"  Top routes after sorting: {len(top_routes)}")
+        
+        # Thêm path_labels (tên node), origin/destination cho mỗi route
+        for r in top_routes:
+            path_ids = r['path']
+            r['path_labels'] = [node_names.get(nid, str(nid)) for nid in path_ids]
+            r['origin'] = path_ids[0] if path_ids else None
+            r['destination'] = path_ids[-1] if path_ids else None
+            r['origin_name'] = node_names.get(path_ids[0], str(path_ids[0])) if path_ids else ""
+            r['destination_name'] = node_names.get(path_ids[-1], str(path_ids[-1])) if path_ids else ""
+        
+        # 4. Calculate hub utilization
+        hub_utilization = {}
+        for h in selected_hubs:
+            if (h, period) in u_hub:
+                flow_val = u_hub[(h, period)].X
+                # Get capacity
+                capacity = 0
+                for l in [0, 1, 2, 3]:
+                    if (h, l, period) in y_h and y_h[(h, l, period)].X > 0.5:
+                        if h in L_h and l in L_h[h]:
+                            capacity = L_h[h][l]
+                        break
+                if capacity > 0:
+                    hub_utilization[str(h)] = float(flow_val / capacity)
+        
+        # 5. Calculate modal split
+        modal_split = {'road': 0.0, 'water': 0.0, 'multi-modal': 0.0}
+        total_flow = sum(r['flow'] for r in top_routes)
+        if total_flow > 0:
+            for route in top_routes:
+                mode = route['mode']
+                if mode in modal_split:
+                    modal_split[mode] += route['flow'] / total_flow
+        
+        # 6. Build cost breakdown - recalculate for THIS period only
+        print(f"\nCalculating cost breakdown for period {period}...")
+        
+        # Transportation cost for this period
+        trans_cost_period = 0.0
+        for g, od_pairs_list in OD_pairs.items():
+            for od in od_pairs_list:
+                if (g, od, period) not in w_gk:
+                    continue
+                demand = w_gk[(g, od, period)]
+                if (g, od) not in paths:
+                    continue
+                for idx, path in enumerate(paths[(g, od)]):
+                    key = (g, od, idx, period)
+                    if key in v_path:
+                        path_transport_cost = calculate_transport_cost(path)
+                        trans_cost_period += path_transport_cost * demand * v_path[key].X
+        
+        # Hub service cost for this period
+        serv_cost_period = 0.0
+        for h in H:
+            if h in c_h and (h, period) in u_hub:
+                flow = u_hub[(h, period)].X
+                serv_cost_period += flow * c_h[h]
+        
+        # Mode switching cost for this period
+        mode_switch_cost_period = 0.0
+        def path_has_mode_switch_local(path, hubs=H):
+            """Check if path has mode switch at hub"""
+            def infer_mode(x):
+                s = str(x)
+                return 'road' if '^1' in s else 'waterway'
+            for i in range(len(path) - 2):
+                current_arc = path[i]
+                next_arc = path[i+1]
+                if isinstance(current_arc[0], str) and isinstance(next_arc[1], str) and next_arc[1].startswith(tuple(str(h) for h in hubs)):
+                    hub = int(next_arc[1][0]) if next_arc[1][0].isdigit() else None
+                    if hub in hubs:
+                        current_mode = infer_mode(current_arc[0])
+                        next_mode = infer_mode(next_arc[1])
+                        if current_mode != next_mode:
+                            return True
+            return False
+        
+        for g, od_pairs_list in OD_pairs.items():
+            for od in od_pairs_list:
+                if (g, od, period) not in w_gk:
+                    continue
+                demand = w_gk[(g, od, period)]
+                if (g, od) not in paths:
+                    continue
+                for idx, path in enumerate(paths[(g, od)]):
+                    key = (g, od, idx, period)
+                    if key in v_path:
+                        has_switch = path_has_mode_switch_local(path, hubs=H)
+                        if has_switch:
+                            mode_switch_cost_period += c_s * demand * v_path[key].X
+        
+        # Hub upgrade cost for this period
+        hub_upg_cost_period = 0.0
+        for h in H_tilde:
+            if period == 1:
+                # Period 1: Tính chi phí nếu không ở level 0
+                for l in [1, 2]:
+                    if (h, l, period) in y_h and y_h[(h, l, period)].X > 0.5:
+                        capacity_increase = L_h[h][l] - L_h[h][0]
+                        cost_per_unit = f_lh.get(l, 0)
+                        hub_upg_cost_period += capacity_increase * cost_per_unit
+            else:
+                # Period > 1: Tính chi phí nâng cấp từ period trước
+                for l in [1, 2]:
+                    for prev_l in [0, 1]:
+                        if l > prev_l:
+                            var_name = f"hub_upgrade_{h}_{prev_l}_to_{l}_t{period}"
+                            upgrade_var = model.getVarByName(var_name)
+                            if upgrade_var and upgrade_var.X > 0.5:
+                                capacity_increase = L_h[h][l] - L_h[h][prev_l]
+                                cost_per_unit = f_lh.get(l, 0)
+                                hub_upg_cost_period += capacity_increase * cost_per_unit
+        
+        # Arc upgrade cost for this period
+        arc_upg_cost_period = 0.0
+        for a in A_tilde:
+            if period == 1:
+                if (a[0], a[1], 1, period) in y_a and y_a[(a[0], a[1], 1, period)].X > 0.5:
+                    capacity_increase = L_a[a][1] - L_a[a][0]
+                    cost_per_unit = f_la.get(a, 0)
+                    arc_upg_cost_period += capacity_increase * cost_per_unit
+            else:
+                var_name = f"arc_upgrade_{a[0]}_{a[1]}_t{period}"
+                upgrade_var = model.getVarByName(var_name)
+                if upgrade_var and upgrade_var.X > 0.5:
+                    capacity_increase = L_a[a][1] - L_a[a][0]
+                    cost_per_unit = f_la.get(a, 0)
+                    arc_upg_cost_period += capacity_increase * cost_per_unit
+        
+        print(f"  Period {period} costs:")
+        print(f"    Transportation: {trans_cost_period:,.0f}")
+        print(f"    Hub service: {serv_cost_period:,.0f}")
+        print(f"    Mode switching: {mode_switch_cost_period:,.0f}")
+        print(f"    Hub upgrade: {hub_upg_cost_period:,.0f}")
+        print(f"    Arc upgrade: {arc_upg_cost_period:,.0f}")
+        
+        cost_breakdown = {
+            "transportation": float(trans_cost_period),
+            "hub_service": float(serv_cost_period),
+            "mode_switching": float(mode_switch_cost_period),
+            "hub_upgrade": float(hub_upg_cost_period),
+            "arc_upgrade": float(arc_upg_cost_period)
+        }
+        
+        # 7. Calculate efficiency (simplified)
+        total_demand = sum(w_gk.get((g, od, period), 0) for g in OD_pairs.keys() for od in OD_pairs[g])
+        efficiency = 0.85  # Placeholder
+        
+        # 8. Build insights
+        insights = {
+            "strategy": f"Multi-modal hub-and-spoke with {len(selected_hubs)} hubs selected",
+            "key_findings": []
+        }
+        
+        if len(selected_hubs) > 0:
+            insights["key_findings"].append(f"{len(selected_hubs)} hubs selected: {selected_hubs}")
+        if modal_split.get('water', 0) > 0.5:
+            insights["key_findings"].append(f"Waterways handle {modal_split['water']*100:.0f}% of flow")
+        if len(arc_upgrades) > 0:
+            insights["key_findings"].append(f"{len(arc_upgrades)} arcs upgraded in period {period}")
+        
+        # 9. Build final JSON - cập nhật chi tiết đầy đủ
+        from datetime import datetime
+        total_demand_period = sum(w_gk.get((g, od, period), 0) for g in OD_pairs.keys() for od in OD_pairs[g])
+        
+        result_json = {
+            "region": "Mekong",
+            "period": period,
+            "total_cost": float(model.ObjVal),
+            "total_time": float((trans_cost_period + serv_cost_period) / 1000),  # Estimate
+            "num_hubs": len(selected_hubs),
+            "selected_hubs": selected_hubs,
+            "efficiency": efficiency,
+            "solver_status": "optimal" if model.status == GRB.OPTIMAL else "time_limit",
+            "solve_time": float(solve_time),
+            "num_routes": len(top_routes),
+            "total_routes_found": routes_found,
+            "total_demand": float(total_demand_period),
+            "top_routes": top_routes,
+            "hub_utilization": hub_utilization,
+            "modal_split": modal_split,
+            "cost_breakdown": cost_breakdown,
+            "hub_levels": hub_levels,
+            "arc_upgrades": arc_upgrades,
+            "insights": insights,
+            # Metadata để app dễ hiển thị
+            "node_names": node_names,
+            "node_coords": node_coords,
+            "export_timestamp": datetime.now().isoformat(),
+        }
+        
+        # 10. Save to JSON
+        output_path = Path(output_dir)
+        output_path.mkdir(parents=True, exist_ok=True)
+        output_file = output_path / f"optimization_results_period{period}.json"
+        
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(result_json, f, indent=2, ensure_ascii=False)
+        
+        print(f"\n✓ Results exported to: {output_file}")
+        print(f"  - Selected hubs: {selected_hubs} (count: {len(selected_hubs)})")
+        print(f"  - Routes: {len(top_routes)}")
+        print(f"  - Arc upgrades: {len(arc_upgrades)}")
+        print(f"  - Total cost: {model.ObjVal:,.0f}")
+        print(f"  - Hub utilization: {hub_utilization}")
+        print(f"  - Modal split: {modal_split}")
+        print(f"  - Cost breakdown: {cost_breakdown}")
+        
+        # Debug: Print first route if exists
+        if top_routes:
+            print(f"\n  Sample route: {top_routes[0]}")
+        else:
+            print(f"\n  ⚠ WARNING: No routes extracted! Check v_path values.")
+        
+        return output_file
+    
+    # Export for each period
+    for t in T:
+        export_results_to_json(period=t, output_dir="data/Mekong")
 
 elif model.status == GRB.INFEASIBLE:
     print("\n" + "="*60)

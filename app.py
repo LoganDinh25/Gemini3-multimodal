@@ -226,6 +226,10 @@ if 'commodity' not in st.session_state:
     st.session_state.commodity = "Rice"  # Default to Rice (one of the valid options)
 if 'priority' not in st.session_state:
     st.session_state.priority = 0.5
+if 'scenario_chat_history' not in st.session_state:
+    st.session_state.scenario_chat_history = []
+if 'scenario_chat_expanded' not in st.session_state:
+    st.session_state.scenario_chat_expanded = False
 
 # ============================================================================
 # HEADER WITH NAVIGATION
@@ -283,10 +287,10 @@ with col_banner_right:
         if st.button("🧠 Ask Gemini 3", type="primary", use_container_width=True):
             if st.session_state.optimization_results:
                 st.session_state.ask_gemini = True
-                # Switch to Explanation tab
-                st.info("💡 Check the 'Explanation' tab for Gemini 3 insights!")
+                st.session_state.scenario_chat_expanded = True
+                st.success("💬 Chat đã mở! Cuộn xuống để hỏi Gemini 3.")
             else:
-                st.warning("⚠️ Please load optimization results first by clicking 'Run Scenario'!")
+                st.warning("⚠️ Vui lòng chạy 'Run Scenario' trước!")
 
 # Use tab1 for main scenario view
 with tab1:
@@ -363,6 +367,31 @@ with tab1:
         st.markdown("<br>", unsafe_allow_html=True)
         if st.button("Generate Plan", type="primary", use_container_width=True):
             st.session_state.generate_plan = True
+        
+        # Chạy model_gurobi.py (dùng đúng format demand, cost từ arcs_remapped, nodes)
+        st.markdown("---")
+        st.caption("Mặc định đọc từ file JSON. Chạy model_gurobi.py:")
+        if st.button("🔄 Chạy Gurobi", key="run_gurobi", use_container_width=True, help="Chạy model_gurobi.py (data từ arcs_remapped.csv, nodes_remapped_with_coords.csv)"):
+            import subprocess
+            try:
+                with st.spinner("⏳ Đang chạy model_gurobi.py... (có thể mất 2-5 phút)"):
+                    result = subprocess.run(
+                        ["python", "model_gurobi.py"],
+                        cwd=Path(__file__).parent,
+                        capture_output=True,
+                        text=True,
+                        timeout=600
+                    )
+                if result.returncode == 0:
+                    st.success("✅ model_gurobi.py hoàn thành! Xem kết quả trong terminal.")
+                else:
+                    st.warning(f"⚠️ Thoát với code {result.returncode}. Xem terminal để debug.")
+            except subprocess.TimeoutExpired:
+                st.warning("⚠️ Timeout (10 phút). Model vẫn có thể đang chạy trong terminal.")
+            except FileNotFoundError:
+                st.error("❌ Không tìm thấy model_gurobi.py")
+            except Exception as e:
+                st.error(f"❌ Lỗi: {e}")
     
     with col_middle:
         # Always load and display map (from Mekong data)
@@ -396,7 +425,8 @@ with tab1:
                 nodes=graph_data['nodes'],
                 edges=graph_data['edges'],
                 optimization_results=opt_results if opt_results else None,
-                highlight_paths=bool(opt_results)
+                highlight_paths=bool(opt_results),
+                commodity=st.session_state.commodity
             )
             if folium_map:
                 st_folium(folium_map, width=None, height=500, key="scenario_folium_map")
@@ -404,7 +434,8 @@ with tab1:
                 st.warning("Tọa độ chưa chuẩn WGS84. Dùng đồ thị hoặc cài pyproj để chuyển đổi tự động.")
                 fig = services['graph'].visualize_network_interactive(
                     nodes=graph_data['nodes'], edges=graph_data['edges'],
-                    optimization_results=opt_results, highlight_paths=bool(opt_results)
+                    optimization_results=opt_results, highlight_paths=bool(opt_results),
+                    commodity=st.session_state.commodity
                 )
                 st.plotly_chart(fig, use_container_width=True, key="scenario_map")
         else:
@@ -413,7 +444,8 @@ with tab1:
                 nodes=graph_data['nodes'],
                 edges=graph_data['edges'],
                 optimization_results=opt_results if opt_results else None,
-                highlight_paths=bool(opt_results)
+                highlight_paths=bool(opt_results),
+                commodity=st.session_state.commodity
             )
             st.plotly_chart(fig, use_container_width=True, key="scenario_map")
         
@@ -436,11 +468,44 @@ with tab1:
                         </div>
                         """, unsafe_allow_html=True)
                 
-                st.markdown("""
-                <div style="text-align: right; margin-top: 1rem;">
-                    <button style="background: #667eea; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">+ Ask more...</button>
-                </div>
-                """, unsafe_allow_html=True)
+                # Auto-expand chat when Ask Gemini 3 was clicked
+                if st.session_state.get('ask_gemini', False):
+                    st.session_state.scenario_chat_expanded = True
+                    st.session_state.ask_gemini = False
+                
+                # + Ask more... - Chat with Gemini (functional)
+                with st.expander("💬 + Ask more... (Chat với Gemini 3)", expanded=st.session_state.get('scenario_chat_expanded', False)):
+                    # Display chat history
+                    for role, msg in st.session_state.scenario_chat_history:
+                        if role == "user":
+                            st.markdown(f"**Bạn:** {msg}")
+                        else:
+                            st.markdown(f"**Gemini 3:**\n{msg}")
+                    
+                    # Chat input
+                    q = st.text_input("Đặt câu hỏi về chiến lược:", placeholder="VD: Tại sao Hub 14 được chọn? Rủi ro chính là gì?", key="scenario_chat_input")
+                    col_s, col_c = st.columns([4, 1])
+                    with col_s:
+                        if st.button("📤 Gửi", key="scenario_send"):
+                            if q.strip():
+                                with st.spinner("🧠 Gemini 3 đang suy nghĩ..."):
+                                    ctx = {
+                                        'optimization_results': st.session_state.optimization_results,
+                                        'graph_data': services['loader'].load_region_data(st.session_state.region),
+                                        'period': st.session_state.period,
+                                        'commodity': st.session_state.commodity
+                                    }
+                                    ans = services['gemini'].chat(q.strip(), ctx)
+                                    st.session_state.scenario_chat_history.append(("user", q.strip()))
+                                    st.session_state.scenario_chat_history.append(("assistant", ans))
+                                    st.session_state.scenario_chat_expanded = True
+                                    st.rerun()
+                            else:
+                                st.warning("Vui lòng nhập câu hỏi.")
+                    with col_c:
+                        if st.button("🗑️ Xóa", key="scenario_clear"):
+                            st.session_state.scenario_chat_history = []
+                            st.rerun()
     
     with col_right:
         st.markdown("""
@@ -564,14 +629,16 @@ with tab2:
                     nodes=graph_data['nodes'],
                     edges=graph_data['edges'],
                     optimization_results=opt_results,
-                    highlight_paths=True
+                    highlight_paths=True,
+                    commodity=st.session_state.commodity
                 )
                 if folium_map:
                     st_folium(folium_map, width=None, height=500, key="network_folium_map")
                 else:
                     fig = services['graph'].visualize_network_interactive(
                         nodes=graph_data['nodes'], edges=graph_data['edges'],
-                        optimization_results=opt_results, highlight_paths=True
+                        optimization_results=opt_results, highlight_paths=True,
+                        commodity=st.session_state.commodity
                     )
                     st.plotly_chart(fig, use_container_width=True, key="network_map")
             else:
@@ -579,7 +646,8 @@ with tab2:
                     nodes=graph_data['nodes'],
                     edges=graph_data['edges'],
                     optimization_results=opt_results,
-                    highlight_paths=True
+                    highlight_paths=True,
+                    commodity=st.session_state.commodity
                 )
                 st.plotly_chart(fig, use_container_width=True, key="network_map")
         
@@ -666,9 +734,13 @@ with tab3:
         should_show_explanation = True
         st.session_state.ask_gemini = False
     
-    if st.button("✨ Ask Gemini 3 to Explain Strategy", type="primary", disabled=not st.session_state.optimization_results, use_container_width=True) or should_show_explanation:
-        # Use cached explanation if available, otherwise generate new one
-        if st.session_state.get('explanation_result') and not should_show_explanation:
+    clicked_explain = st.button("✨ Ask Gemini 3 to Explain Strategy", type="primary", disabled=not st.session_state.optimization_results, use_container_width=True)
+    has_explanation = bool(st.session_state.get('explanation_result'))
+    
+    # Show explanation + chat when: clicked explain, or have cached explanation (e.g. after Send rerun)
+    if (clicked_explain or should_show_explanation or has_explanation) and st.session_state.optimization_results:
+        # Use cached explanation if available (e.g. after Send rerun); generate when user clicked Explain
+        if has_explanation and not clicked_explain and not should_show_explanation:
             explanation = st.session_state.explanation_result
         else:
             with st.spinner("🧠 Gemini 3 is analyzing the optimization strategy..."):

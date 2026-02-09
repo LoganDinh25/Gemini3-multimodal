@@ -32,7 +32,8 @@ def get_optimization_results_path(region: str, period: int) -> Path:
 # Gemini API settings
 GEMINI_API_KEY_ENV = "GEMINI_API_KEY"
 GEMINI_API_KEY = "AIzaSyAgAZu1kmuu8WhlIaWK7PlPHUVwDiMhaKc"  # Default API key
-GEMINI_MODEL = "gemini-pro"  # Using gemini-pro (gemini-1.5-pro requires v1beta API)
+# gemini-pro deprecated 2025; use gemini-2.5-flash (stable) or gemini-2.5-pro
+GEMINI_MODEL = "gemini-2.5-flash"
 
 # Optimization settings
 DEFAULT_PRIORITY = 0.5  # 0 = cost, 1 = speed

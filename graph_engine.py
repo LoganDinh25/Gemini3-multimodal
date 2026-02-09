@@ -66,12 +66,26 @@ class GraphEngine:
         
         return G
     
+    def _filter_routes_by_commodity(
+        self, 
+        optimization_results: Dict[str, Any], 
+        commodity: Optional[str] = None
+    ) -> List[Dict]:
+        """Filter top_routes by commodity. Returns filtered list or all if no match."""
+        routes = optimization_results.get('top_routes', [])
+        if not commodity or not routes:
+            return routes[:10]
+        c = str(commodity).strip().lower()
+        filtered = [r for r in routes if str(r.get('commodity', '')).strip().lower() == c]
+        return filtered[:10] if filtered else routes[:10]  # Fallback to all
+
     def visualize_network_interactive(
         self,
         nodes: pd.DataFrame,
         edges: pd.DataFrame,
         optimization_results: Dict[str, Any] = None,
-        highlight_paths: bool = False
+        highlight_paths: bool = False,
+        commodity: Optional[str] = None
     ) -> go.Figure:
         """
         Create interactive network visualization with Plotly
@@ -81,6 +95,7 @@ class GraphEngine:
             edges: Edge dataframe
             optimization_results: Results to highlight
             highlight_paths: Whether to highlight optimal paths
+            commodity: Filter optimal routes by commodity (e.g. Rice, Passenger)
             
         Returns:
             Plotly figure
@@ -146,10 +161,10 @@ class GraphEngine:
                 )
                 edge_traces.append(edge_trace)
         
-        # Highlight optimal paths if requested
+        # Highlight optimal paths if requested (filter by commodity)
         if highlight_paths and optimization_results:
-            top_routes = optimization_results.get('top_routes', [])
-            for route in top_routes[:3]:
+            top_routes = self._filter_routes_by_commodity(optimization_results, commodity)
+            for route in top_routes[:5]:
                 path = route.get('path', [])
                 if len(path) >= 2:
                     path_x = []
@@ -166,7 +181,7 @@ class GraphEngine:
                         line=dict(width=4, color='#27ae60'),
                         hoverinfo='none',
                         mode='lines',
-                        name='Optimal Route',
+                        name=f"Optimal ({route.get('commodity', '')})" if commodity else 'Optimal Route',
                         showlegend=(route == top_routes[0])  # Only show once in legend
                     )
                     edge_traces.append(optimal_trace)
@@ -250,6 +265,7 @@ class GraphEngine:
         edges: pd.DataFrame,
         optimization_results: Dict[str, Any] = None,
         highlight_paths: bool = False,
+        commodity: Optional[str] = None,
         figsize: Tuple[int, int] = (12, 8)
     ) -> plt.Figure:
         """
@@ -322,9 +338,9 @@ class GraphEngine:
                 ax=ax
             )
         
-        # Highlight optimal paths if requested
+        # Highlight optimal paths if requested (filter by commodity)
         if highlight_paths and optimization_results:
-            self._highlight_optimal_paths(G, optimization_results, ax)
+            self._highlight_optimal_paths(G, optimization_results, ax, commodity=commodity)
         
         # Draw nodes
         nx.draw_networkx_nodes(
@@ -396,7 +412,8 @@ class GraphEngine:
         self,
         G: nx.DiGraph,
         optimization_results: Dict[str, Any],
-        ax: plt.Axes
+        ax: plt.Axes,
+        commodity: Optional[str] = None
     ):
         """
         Highlight optimal paths from optimization results
@@ -405,10 +422,11 @@ class GraphEngine:
             G: NetworkX graph
             optimization_results: Optimization output
             ax: Matplotlib axes
+            commodity: Filter routes by commodity
         """
-        top_routes = optimization_results.get('top_routes', [])
+        top_routes = self._filter_routes_by_commodity(optimization_results, commodity)
         
-        for route in top_routes[:3]:  # Top 3 routes
+        for route in top_routes[:5]:  # Top 5 routes (filtered by commodity)
             path = route.get('path', [])
             
             if len(path) < 2:
@@ -550,6 +568,7 @@ class GraphEngine:
         edges: pd.DataFrame,
         optimization_results: Optional[Dict[str, Any]] = None,
         highlight_paths: bool = False,
+        commodity: Optional[str] = None,
         center_lat: Optional[float] = None,
         center_lon: Optional[float] = None,
         zoom_start: int = 9
@@ -607,7 +626,8 @@ class GraphEngine:
         
         optimal_edges = set()
         if highlight_paths and optimization_results:
-            for route in optimization_results.get('top_routes', [])[:3]:
+            top_routes = self._filter_routes_by_commodity(optimization_results, commodity)
+            for route in top_routes[:5]:
                 path = route.get('path', [])
                 for i in range(len(path) - 1):
                     optimal_edges.add((path[i], path[i + 1]))
@@ -669,14 +689,15 @@ class GraphEngine:
                 fillOpacity=0.8
             ).add_to(m)
         
-        # Legend
-        legend_html = '''
+        # Legend (include commodity filter if applied)
+        opt_label = f"Optimal ({commodity})" if commodity else "Optimal Route"
+        legend_html = f'''
         <div style="position: fixed; bottom: 50px; left: 50px; z-index: 1000; 
                     background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">
         <p><b>Legend</b></p>
         <p><span style="color: #3498db;">━━</span> Roadway</p>
         <p><span style="color: #2980b9;">╌╌</span> Waterway</p>
-        <p><span style="color: #27ae60;">━━</span> Optimal Route</p>
+        <p><span style="color: #27ae60;">━━</span> {opt_label}</p>
         <p><span style="color: red;">●</span> Hub | <span style="color: blue;">●</span> Normal</p>
         </div>
         '''
