@@ -5,6 +5,9 @@ matplotlib>=3.7.0
 numpy>=1.24.0
 plotly>=5.18.0
 google-generativeai>=0.3.0
+folium>=0.15.0
+streamlit-folium>=0.15.0
+pyproj>=3.6.0
 
 # Gurobi optimization (optional - for running optimization_module.py)
 # gurobipy>=10.0.0

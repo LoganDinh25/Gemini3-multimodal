@@ -8,9 +8,15 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import plotly.graph_objects as go
 import plotly.express as px
-from typing import Dict, List, Any, Tuple
+from typing import Dict, List, Any, Tuple, Optional
 import pandas as pd
 import numpy as np
+
+try:
+    import folium
+    _HAS_FOLIUM = True
+except ImportError:
+    _HAS_FOLIUM = False
 
 class GraphEngine:
     def __init__(self):
@@ -537,3 +543,143 @@ class GraphEngine:
         bottlenecks.sort(key=lambda x: x['utilization'], reverse=True)
         
         return bottlenecks
+
+    def visualize_network_map(
+        self,
+        nodes: pd.DataFrame,
+        edges: pd.DataFrame,
+        optimization_results: Optional[Dict[str, Any]] = None,
+        highlight_paths: bool = False,
+        center_lat: Optional[float] = None,
+        center_lon: Optional[float] = None,
+        zoom_start: int = 9
+    ):
+        """
+        Render logistics network on real map (Folium/OpenStreetMap).
+        Requires lat/lon in WGS84 (data_loader converts VN-2000 automatically).
+        
+        Args:
+            nodes: Node dataframe with lat, lon
+            edges: Edge dataframe with from_node, to_node, mode
+            optimization_results: Results to highlight optimal paths
+            highlight_paths: Whether to highlight optimal routes
+            center_lat, center_lon: Map center (auto from nodes if None)
+            zoom_start: Initial zoom level
+            
+        Returns:
+            folium.Map or None if folium not installed
+        """
+        if not _HAS_FOLIUM:
+            return None
+        
+        # Validate WGS84 coordinates (Mekong: lat 9-11, lon 104-107)
+        valid_nodes = nodes.dropna(subset=['lat', 'lon'])
+        valid_nodes = valid_nodes[
+            (valid_nodes['lat'].between(8, 12)) & 
+            (valid_nodes['lon'].between(103, 108))
+        ]
+        
+        if valid_nodes.empty:
+            return None
+        
+        # Map center
+        if center_lat is None:
+            center_lat = valid_nodes['lat'].mean()
+        if center_lon is None:
+            center_lon = valid_nodes['lon'].mean()
+        
+        m = folium.Map(
+            location=[center_lat, center_lon],
+            zoom_start=zoom_start,
+            tiles='OpenStreetMap',
+            control_scale=True
+        )
+        
+        # Build node lookup
+        node_lookup = valid_nodes.set_index('node_id')
+        
+        # Draw edges by mode
+        mode_styles = {
+            'road': {'color': '#3498db', 'weight': 2, 'dash_array': '0'},
+            'water': {'color': '#2980b9', 'weight': 3, 'dash_array': '5, 5'},
+            'waterway': {'color': '#2980b9', 'weight': 3, 'dash_array': '5, 5'},
+        }
+        
+        optimal_edges = set()
+        if highlight_paths and optimization_results:
+            for route in optimization_results.get('top_routes', [])[:3]:
+                path = route.get('path', [])
+                for i in range(len(path) - 1):
+                    optimal_edges.add((path[i], path[i + 1]))
+        
+        for _, edge in edges.iterrows():
+            u, v = edge['from_node'], edge['to_node']
+            mode = str(edge.get('mode', 'road')).lower()
+            style = mode_styles.get(mode, mode_styles['road'])
+            
+            if u not in node_lookup.index or v not in node_lookup.index:
+                continue
+            
+            pu = node_lookup.loc[u]
+            pv = node_lookup.loc[v]
+            coords = [[pu['lat'], pu['lon']], [pv['lat'], pv['lon']]]
+            
+            if (u, v) in optimal_edges or (v, u) in optimal_edges:
+                folium.PolyLine(
+                    coords,
+                    color='#27ae60',
+                    weight=4,
+                    opacity=0.9,
+                    popup=f'Optimal route: {u} → {v}'
+                ).add_to(m)
+            else:
+                folium.PolyLine(
+                    coords,
+                    color=style['color'],
+                    weight=style['weight'],
+                    dash_array=style.get('dash_array', '0'),
+                    opacity=0.6,
+                    popup=f'{mode} | {u} → {v}'
+                ).add_to(m)
+        
+        # Draw nodes
+        hub_nodes = set()
+        if 'type' in valid_nodes.columns:
+            hub_nodes = set(valid_nodes[valid_nodes['type'] == 'hub']['node_id'])
+        
+        for _, node in valid_nodes.iterrows():
+            nid = node['node_id']
+            lat, lon = node['lat'], node['lon']
+            name = node.get('name', f'Node {nid}')
+            
+            if nid in hub_nodes:
+                color = 'red'
+                icon = 'star'
+            else:
+                color = 'blue'
+                icon = 'info-sign'
+            
+            folium.CircleMarker(
+                location=[lat, lon],
+                radius=8 if nid in hub_nodes else 5,
+                popup=f'<b>{name}</b><br>ID: {nid}<br>Type: {"Hub" if nid in hub_nodes else "Normal"}',
+                color=color,
+                fill=True,
+                fillColor=color,
+                fillOpacity=0.8
+            ).add_to(m)
+        
+        # Legend
+        legend_html = '''
+        <div style="position: fixed; bottom: 50px; left: 50px; z-index: 1000; 
+                    background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">
+        <p><b>Legend</b></p>
+        <p><span style="color: #3498db;">━━</span> Roadway</p>
+        <p><span style="color: #2980b9;">╌╌</span> Waterway</p>
+        <p><span style="color: #27ae60;">━━</span> Optimal Route</p>
+        <p><span style="color: red;">●</span> Hub | <span style="color: blue;">●</span> Normal</p>
+        </div>
+        '''
+        m.get_root().html.add_child(folium.Element(legend_html))
+        
+        return m

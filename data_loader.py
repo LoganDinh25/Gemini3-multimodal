@@ -8,6 +8,12 @@ import json
 from pathlib import Path
 from typing import Dict, List, Any
 
+try:
+    from coordinate_utils import convert_vn2000_to_wgs84
+    _HAS_COORD_UTILS = True
+except ImportError:
+    _HAS_COORD_UTILS = False
+
 class DataLoader:
     def __init__(self, data_dir: str = "data"):
         """
@@ -86,18 +92,48 @@ class DataLoader:
                 nodes_raw = pd.read_csv(nodes_file, encoding='latin-1')
             
             # Transform to standard format
-            nodes = pd.DataFrame({
-                'node_id': nodes_raw['New_ID'],
-                'name': nodes_raw['Name'],
-                'lon': pd.to_numeric(nodes_raw['Longitude'], errors='coerce'),
-                'lat': pd.to_numeric(nodes_raw['Latitude'], errors='coerce'),
-                'type': nodes_raw['Project'].apply(lambda x: 'hub' if str(x).upper() in ['E', 'NEW', 'UPGRADE'] else 'normal'),
-                'project': nodes_raw['Project'],
-                'capacity_goods': pd.to_numeric(
-                    nodes_raw['Capacity (Goods: (Ton/Year))'].astype(str).str.replace(',', ''), 
-                    errors='coerce'
-                ).fillna(0)
-            })
+            lon_raw = pd.to_numeric(nodes_raw['Longitude'], errors='coerce')
+            lat_raw = pd.to_numeric(nodes_raw['Latitude'], errors='coerce')
+            
+            # Convert VN-2000 (UTM) to WGS84 for real map display if coordinates are in UTM range
+            # VN-2000 Mekong: x ~416k-730k, y ~1.03M-1.22M
+            coords_vn2000 = (lon_raw.dropna().between(400000, 800000).any() and 
+                             lat_raw.dropna().between(1000000, 1300000).any())
+            if _HAS_COORD_UTILS and coords_vn2000:
+                lats, lons = [], []
+                for _, row in nodes_raw.iterrows():
+                    x = pd.to_numeric(row['Longitude'], errors='coerce')
+                    y = pd.to_numeric(row['Latitude'], errors='coerce')
+                    if pd.notna(x) and pd.notna(y) and 400000 <= x <= 800000 and 1000000 <= y <= 1300000:
+                        lat, lon = convert_vn2000_to_wgs84(x, y)
+                        lats.append(lat); lons.append(lon)
+                    else:
+                        lats.append(y); lons.append(x)  # Assume already WGS84
+                nodes = pd.DataFrame({
+                    'node_id': nodes_raw['New_ID'],
+                    'name': nodes_raw['Name'],
+                    'lon': lons,
+                    'lat': lats,
+                    'type': nodes_raw['Project'].apply(lambda x: 'hub' if str(x).upper() in ['E', 'NEW', 'UPGRADE'] else 'normal'),
+                    'project': nodes_raw['Project'],
+                    'capacity_goods': pd.to_numeric(
+                        nodes_raw['Capacity (Goods: (Ton/Year))'].astype(str).str.replace(',', ''), 
+                        errors='coerce'
+                    ).fillna(0)
+                })
+            else:
+                nodes = pd.DataFrame({
+                    'node_id': nodes_raw['New_ID'],
+                    'name': nodes_raw['Name'],
+                    'lon': lon_raw,
+                    'lat': lat_raw,
+                    'type': nodes_raw['Project'].apply(lambda x: 'hub' if str(x).upper() in ['E', 'NEW', 'UPGRADE'] else 'normal'),
+                    'project': nodes_raw['Project'],
+                    'capacity_goods': pd.to_numeric(
+                        nodes_raw['Capacity (Goods: (Ton/Year))'].astype(str).str.replace(',', ''), 
+                        errors='coerce'
+                    ).fillna(0)
+                })
             
             # Load arcs file
             arcs_file = mekong_path / 'arcs_remapped.csv'
@@ -167,6 +203,10 @@ class DataLoader:
         """
         region_path = self.data_dir / region.lower().replace(' ', '_')
         result_file = region_path / f'optimization_results_period{period}.json'
+        
+        # Mekong Delta shares optimization results with Mekong folder
+        if not result_file.exists() and region.lower() == 'mekong delta':
+            result_file = self.data_dir / 'Mekong' / f'optimization_results_period{period}.json'
         
         if not result_file.exists():
             return self._generate_sample_results(region, period)

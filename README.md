@@ -16,6 +16,7 @@
 - [Project Structure](#project-structure)
 - [Key Features](#key-features)
 - [Demo Scenarios](#demo-scenarios)
+- [Thêm Dữ liệu & Bản đồ Thực tế](#thêm-dữ-liệu--bản-đồ-thực-tế)
 
 ---
 
@@ -293,6 +294,22 @@ logistics-planner/
     │   └── optimization_results_period1.json
     └── toy_region/
         └── ...
+```
+
+---
+
+## 🗺️ Thêm Dữ liệu & Bản đồ Thực tế
+
+**Xem chi tiết:** [DATA_GUIDE.md](DATA_GUIDE.md)
+
+### Tóm tắt
+- **Định dạng dữ liệu:** nodes.csv, edges.csv, demand.csv (format chuẩn)
+- **Tọa độ:** WGS84 (lat/lon) hoặc VN-2000 UTM (tự động chuyển đổi)
+- **Bản đồ thực tế:** Bật checkbox "🗺️ Hiển thị bản đồ thực tế" trong tab Scenario/Network
+- **Thêm vùng mới:** Tạo thư mục `data/ten_vung/` với nodes, edges, demand
+
+```bash
+pip install folium streamlit-folium pyproj  # Cho bản đồ thực tế
 ```
 
 ---

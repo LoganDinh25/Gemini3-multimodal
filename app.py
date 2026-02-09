@@ -13,6 +13,12 @@ from gemini_service import GeminiService
 from graph_engine import GraphEngine
 from data_loader import DataLoader
 
+try:
+    from streamlit_folium import st_folium
+    _HAS_STREAMLIT_FOLIUM = True
+except ImportError:
+    _HAS_STREAMLIT_FOLIUM = False
+
 # Page config
 st.set_page_config(
     page_title="Graph-Aware Logistics Planner",
@@ -377,14 +383,39 @@ with tab1:
         </div>
         """, unsafe_allow_html=True)
         
-        # Map visualization - always show network from Mekong data
-        fig = services['graph'].visualize_network_interactive(
-            nodes=graph_data['nodes'],
-            edges=graph_data['edges'],
-            optimization_results=opt_results if opt_results else None,
-            highlight_paths=bool(opt_results)  # Only highlight if we have results
+        # Toggle: Real map (Folium) vs Graph (Plotly)
+        use_real_map = st.checkbox(
+            "🗺️ Hiển thị bản đồ thực tế (OpenStreetMap)",
+            value=True,
+            help="Bật để xem network trên bản đồ thực tế. Tắt để xem dạng đồ thị."
         )
-        st.plotly_chart(fig, use_container_width=True, key="scenario_map")
+        
+        if use_real_map and _HAS_STREAMLIT_FOLIUM:
+            # Real map with Folium
+            folium_map = services['graph'].visualize_network_map(
+                nodes=graph_data['nodes'],
+                edges=graph_data['edges'],
+                optimization_results=opt_results if opt_results else None,
+                highlight_paths=bool(opt_results)
+            )
+            if folium_map:
+                st_folium(folium_map, width=None, height=500, key="scenario_folium_map")
+            else:
+                st.warning("Tọa độ chưa chuẩn WGS84. Dùng đồ thị hoặc cài pyproj để chuyển đổi tự động.")
+                fig = services['graph'].visualize_network_interactive(
+                    nodes=graph_data['nodes'], edges=graph_data['edges'],
+                    optimization_results=opt_results, highlight_paths=bool(opt_results)
+                )
+                st.plotly_chart(fig, use_container_width=True, key="scenario_map")
+        else:
+            # Plotly graph
+            fig = services['graph'].visualize_network_interactive(
+                nodes=graph_data['nodes'],
+                edges=graph_data['edges'],
+                optimization_results=opt_results if opt_results else None,
+                highlight_paths=bool(opt_results)
+            )
+            st.plotly_chart(fig, use_container_width=True, key="scenario_map")
         
         # Show insights only if we have optimization results
         if opt_results:
@@ -518,19 +549,39 @@ with tab2:
         col1, col2 = st.columns([2, 1])
         
         with col1:
-            # Build interactive graph with Plotly
+            # Build interactive graph with Plotly or real map
             graph_data = services['loader'].load_region_data(st.session_state.region)
             opt_results = st.session_state.optimization_results
             
-            # Create interactive network graph
-            fig = services['graph'].visualize_network_interactive(
-                nodes=graph_data['nodes'],
-                edges=graph_data['edges'],
-                optimization_results=opt_results,
-                highlight_paths=True
+            use_real_map_net = st.checkbox(
+                "🗺️ Bản đồ thực tế",
+                value=True,
+                key="network_map_toggle"
             )
             
-            st.plotly_chart(fig, use_container_width=True, key="network_map")
+            if use_real_map_net and _HAS_STREAMLIT_FOLIUM:
+                folium_map = services['graph'].visualize_network_map(
+                    nodes=graph_data['nodes'],
+                    edges=graph_data['edges'],
+                    optimization_results=opt_results,
+                    highlight_paths=True
+                )
+                if folium_map:
+                    st_folium(folium_map, width=None, height=500, key="network_folium_map")
+                else:
+                    fig = services['graph'].visualize_network_interactive(
+                        nodes=graph_data['nodes'], edges=graph_data['edges'],
+                        optimization_results=opt_results, highlight_paths=True
+                    )
+                    st.plotly_chart(fig, use_container_width=True, key="network_map")
+            else:
+                fig = services['graph'].visualize_network_interactive(
+                    nodes=graph_data['nodes'],
+                    edges=graph_data['edges'],
+                    optimization_results=opt_results,
+                    highlight_paths=True
+                )
+                st.plotly_chart(fig, use_container_width=True, key="network_map")
         
         with col2:
             st.markdown("<div style='padding: 1rem;'>", unsafe_allow_html=True)
