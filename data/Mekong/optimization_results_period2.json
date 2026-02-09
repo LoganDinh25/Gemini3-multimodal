@@ -1,0 +1,49 @@
+{
+  "region": "Mekong",
+  "period": 2,
+  "total_cost": 142000000,
+  "total_time": 20.3,
+  "num_hubs": 4,
+  "selected_hubs": [7, 10, 14, 18],
+  "efficiency": 0.89,
+  "solver_status": "optimal",
+  "solve_time": 312.7,
+  "top_routes": [
+    {
+      "route_id": 1,
+      "path": [0, 7, 10, 14, 18],
+      "commodity": "Rice",
+      "mode": "multi-modal",
+      "cost": 16500000,
+      "time": 5.1,
+      "flow": 2800
+    },
+    {
+      "route_id": 2,
+      "path": [1, 7, 12, 18],
+      "commodity": "Rice",
+      "mode": "water",
+      "cost": 13500000,
+      "time": 6.5,
+      "flow": 2000
+    }
+  ],
+  "hub_utilization": {
+    "7": 0.88,
+    "10": 0.75,
+    "14": 0.95,
+    "18": 0.68
+  },
+  "modal_split": {
+    "road": 0.32,
+    "water": 0.63,
+    "multi-modal": 0.05
+  },
+  "cost_breakdown": {
+    "transportation": 108000000,
+    "hub_service": 18000000,
+    "mode_switching": 9000000,
+    "hub_upgrade": 5000000,
+    "arc_upgrade": 2000000
+  }
+}
