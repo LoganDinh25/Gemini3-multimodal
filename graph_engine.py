@@ -820,14 +820,14 @@ class GraphEngine:
         center_lat = float(center_lat)
         center_lon = float(center_lon)
 
-        # Online map: Stadia Maps (OSM-based), ít bị rate-limit trên Streamlit Cloud
+        # Online map: OpenStreetMap (code cũ)
         if use_osm_tiles:
             m = folium.Map(
                 location=[center_lat, center_lon],
                 zoom_start=zoom_start,
-                tiles='https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}.png',
-                attr='© Stadia Maps © OpenStreetMap',
-                control_scale=True
+                tiles='OpenStreetMap',
+                control_scale=True,
+                attr='© OpenStreetMap'
             )
         else:
             m = folium.Map(
