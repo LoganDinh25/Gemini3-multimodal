@@ -482,15 +482,20 @@ with tab_scenario:
                 )
                 st.plotly_chart(fig, use_container_width=True, key=f"scenario_map_{st.session_state.period}_{st.session_state.commodity}")
         if opt_results and not animation_on_map and not (nodes_df.empty or edges_df.empty):
-            fig_anim = services['graph'].visualize_network_animated(
-                nodes=nodes_df,
-                edges=edges_df,
-                optimization_results=opt_results,
-                commodity=st.session_state.commodity,
-            )
-            if fig_anim:
-                st.markdown("**Animated route per OD (commodity)** — click ▶ Play to see route animate from origin to destination.")
-                st.plotly_chart(fig_anim, use_container_width=True, key=f"scenario_animated_{st.session_state.period}_{st.session_state.commodity}")
+            _anim_fn = getattr(services['graph'], 'visualize_network_animated', None)
+            if callable(_anim_fn):
+                try:
+                    fig_anim = _anim_fn(
+                        nodes=nodes_df,
+                        edges=edges_df,
+                        optimization_results=opt_results,
+                        commodity=st.session_state.commodity,
+                    )
+                    if fig_anim:
+                        st.markdown("**Animated route per OD (commodity)** — click ▶ Play to see route animate from origin to destination.")
+                        st.plotly_chart(fig_anim, use_container_width=True, key=f"scenario_animated_{st.session_state.period}_{st.session_state.commodity}")
+                except (AttributeError, TypeError, KeyError, ValueError):
+                    pass
         st.markdown("""
         <div class="gemini-card" style="margin-top: 1.25rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -677,14 +682,30 @@ with tab_network:
                 )
                 st.plotly_chart(fig, use_container_width=True, key="net_plotly")
             if not net_animation_on_map:
-                fig_anim = services['graph'].visualize_network_animated(
-                    nodes=graph_data['nodes'], edges=graph_data['edges'],
-                    optimization_results=opt_results,
-                    commodity=st.session_state.commodity,
-                )
-                if fig_anim:
-                    st.markdown("**Animated route per OD** — ▶ Play to see route animate.")
-                    st.plotly_chart(fig_anim, use_container_width=True, key="net_animated")
+                _anim_fn = getattr(services['graph'], 'visualize_network_animated', None)
+                if callable(_anim_fn):
+                    try:
+                        net_nodes = graph_data.get('nodes')
+                        net_edges = graph_data.get('edges')
+                        if net_nodes is not None and not isinstance(net_nodes, pd.DataFrame):
+                            net_nodes = pd.DataFrame(net_nodes) if net_nodes else pd.DataFrame()
+                        if net_edges is not None and not isinstance(net_edges, pd.DataFrame):
+                            net_edges = pd.DataFrame(net_edges) if net_edges else pd.DataFrame()
+                        if net_nodes is None:
+                            net_nodes = pd.DataFrame()
+                        if net_edges is None:
+                            net_edges = pd.DataFrame()
+                        if not net_nodes.empty and not net_edges.empty:
+                            fig_anim = _anim_fn(
+                                nodes=net_nodes, edges=net_edges,
+                                optimization_results=opt_results,
+                                commodity=st.session_state.commodity,
+                            )
+                            if fig_anim:
+                                st.markdown("**Animated route per OD** — ▶ Play to see route animate.")
+                                st.plotly_chart(fig_anim, use_container_width=True, key="net_animated")
+                    except (AttributeError, TypeError, KeyError, ValueError):
+                        pass
         with col_n2:
             results = st.session_state.optimization_results
             st.markdown("""
