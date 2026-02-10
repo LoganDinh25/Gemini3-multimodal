@@ -459,6 +459,16 @@ new_hubs = candidate_hubs_new
 print(f"  • Tất cả hubs từ dữ liệu: {H}")
 
 print(f"  • Real nodes: {len(N)} nodes")
+
+# ============================================================
+# CACHE: Lưu dữ liệu theo Data Model _ 2026-Feb_05-Eps_02.ipynb
+# Để lần sau không phải chạy lại - load từ cache nếu hợp lệ
+# ============================================================
+_model_cache_path = Path('data/model_cache_eps02.pkl')
+def _model_cache_source_hash():
+    """Hash để kiểm tra cache còn hợp lệ (dựa trên dữ liệu nguồn)."""
+    key = (len(edges_raw), tuple(sorted(OD_pairs.keys())), tuple(sorted(H)), tuple(sorted(H0)))
+    return hash(key)
 # ============================================
 #TẠO ARCS TỪ DỮ LIỆU CSV
 # ============================================
@@ -1194,6 +1204,19 @@ if not skip_path_calculation:
     print(f"  ✓ Đã lưu paths vào: {paths_pkl}")
 
 
+# Kiểm tra cache L_h, L_a, w_gk (theo Eps_02) - load nếu hợp lệ
+_use_model_cache = False
+if _model_cache_path.exists():
+    try:
+        with open(_model_cache_path, 'rb') as f:
+            _cache = pickle.load(f)
+        if _cache.get('source_hash') == _model_cache_source_hash():
+            print(f"\n✓ Tìm thấy cache hợp lệ: {_model_cache_path}")
+            print("  Đang load L_h, L_a, w_gk từ cache (không cần tính lại)...")
+            _use_model_cache = True
+    except Exception as e:
+        print(f"  ⚠️ Không đọc được cache: {e}")
+
 # Hub capacity levels 
 def build_L_h(node_capacity_pcu_levels, new_hubs, H_tilde, H0):
     """
@@ -1226,38 +1249,50 @@ def build_L_h(node_capacity_pcu_levels, new_hubs, H_tilde, H0):
         L_h[h] = {l: float(cap) for l, cap in enumerate(caps)}
 
     # 3) Existing hubs: only level 0
+    # QUAN TRỌNG: Nếu caps[0]=0 (format "0;500000;...") thì dùng mức dương đầu tiên
+    # để tránh u_hub <= 0 khi có luồng qua hub → infeasible
     for h in H0:
         caps = node_capacity_pcu_levels.get(h, [])
         if not caps:
             continue
-        L_h[h] = {0: float(caps[0])}
+        cap0 = float(caps[0])
+        if cap0 <= 0 and len(caps) > 1:
+            cap0 = next((float(c) for c in caps[1:] if float(c) > 0), 0)
+        if cap0 <= 0:
+            cap0 = 1e9  # fallback: existing hub phải có capacity để tránh infeasible
+        L_h[h] = {0: cap0}
 
     return L_h
-L_h = build_L_h(
-    node_capacity_pcu_levels=node_capacity_pcu_levels,
-    new_hubs=new_hubs,
-    H_tilde=H_tilde,
-    H0=H0
-)
 
-# Capacity cho các cạnh có thể nâng cấp (potential arcs)
-print(f"\n  c) CÁC CẠNH CÓ THỂ NÂNG CẤP (potential arcs):")
+if _use_model_cache:
+    L_h = _cache['L_h']
+    L_a = _cache['L_a']
+    w_gk = _cache['w_gk']
+    print("  ✓ Đã load L_h, L_a, w_gk từ cache")
+else:
+    L_h = build_L_h(
+        node_capacity_pcu_levels=node_capacity_pcu_levels,
+        new_hubs=new_hubs,
+        H_tilde=H_tilde,
+        H0=H0
+    )
 
-L_a = {}
-for a in A_tilde:
-    # Base capacity (level 0) - đủ cho nhu cầu cơ bản
-    base_capacity = 10000000
-    
-    # Upgraded capacity (level 1) - đủ cho nhu cầu cao nhất
-    if '^1' in str(a[0]) or '^1' in str(a[1]):  # Road
-        upgraded_capacity =  15398438 # Tăng lên
-        mode = 'road'
-    else:  # Waterway
-        upgraded_capacity = 18472500   # Tăng lên
-        mode = 'waterway'
-    
-    L_a[a] = {0: base_capacity, 1: upgraded_capacity}
-    print(f"     {a} ({mode}): level 0 = {base_capacity:,}, level 1 = {upgraded_capacity:,}")
+    # Capacity cho các cạnh có thể nâng cấp (potential arcs) - theo Eps_02
+    print(f"\n  c) CÁC CẠNH CÓ THỂ NÂNG CẤP (potential arcs):")
+
+    L_a = {}
+    for a in A_tilde:
+        # Base capacity (level 0) - đủ cho nhu cầu cơ bản
+        base_capacity = 10000000
+        # Upgraded capacity (level 1) - theo Eps_02: road=15398438, waterway=18472500
+        if '^1' in str(a[0]) or '^1' in str(a[1]):  # Road
+            upgraded_capacity = 15398438
+            mode = 'road'
+        else:  # Waterway
+            upgraded_capacity = 18472500
+            mode = 'waterway'
+        L_a[a] = {0: base_capacity, 1: upgraded_capacity}
+        print(f"     {a} ({mode}): level 0 = {base_capacity:,}, level 1 = {upgraded_capacity:,}")
 
 def build_through_hub_mapping_all(H, A_tilde):
     """
@@ -1474,18 +1509,10 @@ print(f"  Budget B theo period: {B}")
 
 # ------------------------------------------------
 # 1) HUB CAPACITY DICTIONARY L_h
-#    Tạo từ node_capacity_pcu_levels: {hub: [cap_level0, cap_level1, ...]}
+#    Đã tạo bởi build_L_h() phía trên (theo Eps_02 + fix caps[0]=0 cho existing hubs)
+#    KHÔNG ghi đè L_h - giữ nguyên kết quả build_L_h
 # ------------------------------------------------
-print("\n[1] THIẾT LẬP CAPACITY CHO HUBS (GENERALIZED):")
-
-# Tạo L_h từ node_capacity_pcu_levels
-L_h = {}
-for h in H:
-    levels = node_capacity_pcu_levels.get(h, [])
-    if not levels:
-        L_h[h] = {0: 0.0}
-    else:
-        L_h[h] = {l: float(cap) for l, cap in enumerate(levels)}
+print("\n[1] THIẾT LẬP CAPACITY CHO HUBS (theo Data Model _ 2026-Feb_05-Eps_02.ipynb):")
 
 # a) NEW HUBS (phải mở mới có capacity)
 print("\n  a) NEW HUBS (phải mở mới có capacity):")
@@ -1675,36 +1702,37 @@ for through_arc, real_arc in upgrade_dependencies.items():
 
 
 # ============================================
-# 6) TRANSPORTATION DEMAND
+# 6) TRANSPORTATION DEMAND (theo Data Model _ 2026-Feb_05-Eps_02.ipynb)
 # ============================================
 print("\n[5] THIẾT LẬP NHU CẦU VẬN TẢI")
 
-# Tạo w_gk dựa trên OD_pairs
-w_gk = {}
-T_list = list(T)  # Đảm bảo T là iterable
-
-# Base demand mỗi commodity (theo Data Model _ 2026-Feb_05-Eps_02.ipynb)
+# Base demand và growth_factor - giữ nguyên như Eps_02
 BASE_DEMAND = 10_000
+growth_factor = {1: 1.0, 2: 1.5, 3: 2.0}
+T_list = list(T)
 
-# Nếu có growth_factor, tính demand tăng dần theo thời gian
-growth_factor = {1: 1.0, 2: 1.5, 3: 2.0}  # Ví dụ: tăng 50% mỗi kỳ
+if not _use_model_cache:
+    # Tạo w_gk dựa trên OD_pairs (theo Eps_02)
+    w_gk = {}
+    for g, od_list in OD_pairs.items():
+        num_od_pairs = len(od_list)
+        demand_per_od = BASE_DEMAND / num_od_pairs if num_od_pairs > 0 else BASE_DEMAND
+        for t in T_list:
+            growth = growth_factor.get(t, 1.0)
+            demand_t = demand_per_od * growth
+            for od in od_list:
+                w_gk[(g, od, t)] = demand_t
 
-for g, od_list in OD_pairs.items():
-    # Phân bố base demand = 1,000,000 cho mỗi commodity
-    # Nếu có nhiều OD pairs, chia đều
-    num_od_pairs = len(od_list)
-    if num_od_pairs > 0:
-        demand_per_od = BASE_DEMAND / num_od_pairs
-    else:
-        demand_per_od = BASE_DEMAND
-    
-    for t in T_list:
-        # Tính demand cho kỳ t (có thể dùng growth_factor)
-        growth = growth_factor.get(t, 1.0)
-        demand_t = demand_per_od * growth
-        
-        for od in od_list:
-            w_gk[(g, od, t)] = demand_t
+    # Lưu cache để lần sau không phải chạy lại
+    Path(_model_cache_path).parent.mkdir(parents=True, exist_ok=True)
+    with open(_model_cache_path, 'wb') as f:
+        pickle.dump({
+            'source_hash': _model_cache_source_hash(),
+            'L_h': L_h,
+            'L_a': L_a,
+            'w_gk': w_gk,
+        }, f)
+    print(f"  ✓ Đã lưu cache: {_model_cache_path}")
 
 print(f"  ✓ Đã tạo w_gk cho {len(OD_pairs)} commodities:")
 print(f"  ✓ Base demand mỗi commodity: {BASE_DEMAND:,}")
