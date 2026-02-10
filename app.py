@@ -27,14 +27,14 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS - Decision Intelligence Platform (theo mô tả)
-# Bảng màu: Navy chủ đạo, cyan nhấn AI/Gemini, xanh lá insight tốt, vàng/cam cảnh báo
+# Custom CSS - Decision Intelligence Platform (as described)
+# Color scheme: Navy primary, cyan for AI/Gemini, green for insight, yellow/orange for warning
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     * { font-family: 'Inter', sans-serif; }
     
-    /* Nền chính: Navy / Deep Blue - ổn định, chiến lược */
+    /* Main background: Navy/Deep Blue - stable, strategic */
     .stApp {
         background: linear-gradient(180deg, #0f172a 0%, #1e3a5f 35%, #0f172a 100%);
         background-attachment: fixed;
@@ -43,7 +43,7 @@ st.markdown("""
         background: transparent;
     }
     
-    /* Panel: nền trắng / xám rất nhạt - tăng độ đọc */
+    /* Panel: white/very light gray - improve readability */
     .custom-card {
         background: rgba(248, 250, 252, 0.98);
         padding: 1.5rem;
@@ -67,7 +67,7 @@ st.markdown("""
         margin-bottom: 1rem;
     }
     
-    /* Gemini card - xanh dương sáng / cyan nhấn AI */
+    /* Gemini card - bright blue/cyan AI accent */
     .gemini-card {
         background: linear-gradient(135deg, #0e7490 0%, #06b6d4 100%);
         color: white;
@@ -82,7 +82,7 @@ st.markdown("""
         margin-bottom: 0.5rem;
     }
     
-    /* Nút: Run Scenario = xanh đậm (navy); Ask Gemini 3 = xanh sáng/cyan nổi bật */
+    /* Buttons: Run Scenario = dark blue (navy); Ask Gemini 3 = bright cyan accent */
     .stButton > button {
         background: linear-gradient(135deg, #1e3a5f 0%, #334155 100%) !important;
         color: white !important;
@@ -98,7 +98,7 @@ st.markdown("""
         transform: translateY(-1px) !important;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
     }
-    /* Ask Gemini 3 (nút thứ 2 trong hàng hero) - cyan nổi bật */
+    /* Ask Gemini 3 (2nd button in hero row) - cyan accent */
     [data-testid="stHorizontalBlock"]:first-of-type > div:nth-child(2) .stButton > button {
         background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%) !important;
         box-shadow: 0 2px 12px rgba(6, 182, 212, 0.45) !important;
@@ -117,7 +117,7 @@ st.markdown("""
     .metric-value { font-size: 1.5rem; font-weight: 700; color: #0e7490; }
     .metric-label { font-size: 0.8rem; color: #64748b; }
     
-    /* Tabs (nếu giữ) - navy/cyan */
+    /* Tabs (if kept) - navy/cyan */
     .stTabs [data-baseweb="tab-list"] {
         background: rgba(255, 255, 255, 0.06);
         border-radius: 8px;
@@ -129,7 +129,7 @@ st.markdown("""
         color: white !important;
     }
     
-    /* Chữ trên nền navy - dễ đọc */
+    /* Text on navy - readable */
     .stApp [data-testid="stMarkdown"] p,
     .stApp [data-testid="stMarkdown"] li,
     .stApp [data-testid="stMarkdown"] {
@@ -141,23 +141,23 @@ st.markdown("""
     [data-testid="stWidgetLabel"] p, .stCheckbox [data-testid="stWidgetLabel"] {
         color: rgba(255, 255, 255, 0.98) !important;
     }
-    /* Placeholder trong input - sáng trên nền tối */
+    /* Input placeholder - bright on dark */
     .stTextInput input::placeholder { color: rgba(255, 255, 255, 0.65) !important; }
     
     .stSuccess [data-testid="stMarkdown"], .stWarning [data-testid="stMarkdown"], .stInfo [data-testid="stMarkdown"] {
         color: inherit !important;
     }
-    /* Spinner "Running model (2–5 min)..." và các spinner khác - chữ sáng hơn */
+    /* Spinner and others - brighter text */
     [data-testid="stSpinner"], [data-testid="stSpinner"] *, [data-testid="stSpinner"] + div,
     [data-testid="stSpinner"] ~ [data-testid="stMarkdown"] { color: rgba(255,255,255,0.95) !important; }
-    /* Tab Network: 3 route blocks - chữ màu tối (dùng span thay small để tránh .stApp small trắng) */
+    /* Tab Network: 3 route blocks - dark text */
     .network-route-card, .network-route-card *, .network-route-mode,
     [data-testid="stMarkdown"] .network-route-card,
     [data-testid="stMarkdown"] .network-route-card * { color: #1e293b !important; }
     .stSelectbox > div { background: rgba(255,255,255,0.95) !important; }
     .stTextInput > div > input { background: rgba(255,255,255,0.95) !important; color: #1e293b !important; }
     
-    /* Insight blocks: nền sáng hẳn để chữ đọc rõ (✓ ⚠ ➜) */
+    /* Insight blocks: light bg for readable text */
     .insight-item {
         padding: 0.75rem 1rem;
         margin: 0.5rem 0;
@@ -182,7 +182,7 @@ st.markdown("""
         border-left: 4px solid #06b6d4;
         color: #0e7490 !important;
     }
-    /* Chú thích bản đồ: chữ tối (#0f172a), id ghi đè .stApp [data-testid="stMarkdown"] trắng */
+    /* Map legend: dark text (#0f172a) */
     #map-legend-box, #map-legend-box p { color: #0f172a !important; }
 </style>
 """, unsafe_allow_html=True)
@@ -218,7 +218,7 @@ if 'scenario_chat_expanded' not in st.session_state:
 
 # ============================================================================
 # HERO / HEADER - Decision Intelligence Platform
-# Logo Gemini (não/brain), tagline, nút Run Scenario (navy) + Ask Gemini 3 (cyan)
+# Logo Gemini (brain), tagline, nút Run Scenario (navy) + Ask Gemini 3 (cyan)
 # ============================================================================
 st.markdown("""
 <div class="hero-header" style="
@@ -253,7 +253,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Action buttons: Run Scenario (navy) | Ask Gemini 3 (cyan - nổi bật)
+# Action buttons: Run Scenario (navy) | Ask Gemini 3 (cyan accent)
 col_btn1, col_btn2, col_spacer = st.columns([1, 1, 4])
 with col_btn1:
     if st.button("Run Scenario", type="primary", use_container_width=True, key="btn_run_scenario"):
@@ -285,7 +285,7 @@ with tab_scenario:
     col_left, col_middle, col_right = st.columns([1, 2, 1])
 
     with col_left:
-        # ---------- Set Transport Scenario (gọn, ít chữ) ----------
+        # ---------- Set Transport Scenario (compact) ----------
         st.markdown("""
         <div style="background: rgba(248,250,252,0.98); padding: 1.25rem; border-radius: 12px; 
             box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin-bottom: 1rem;">
@@ -344,7 +344,7 @@ with tab_scenario:
 
     with col_middle:
         graph_data = services['loader'].load_region_data(st.session_state.region)
-        # Luôn load kết quả theo period hiện tại để đổi Period cập nhật map
+        # Always load results for current period to change Period updates map
         opt_results = services['loader'].load_optimization_results(st.session_state.region, st.session_state.period)
         if opt_results:
             st.session_state.optimization_results = opt_results
@@ -370,7 +370,7 @@ with tab_scenario:
             if folium_map:
                 st_folium(folium_map, width=None, height=500, key=f"scenario_folium_map_{st.session_state.period}_{st.session_state.commodity}")
                 if opt_results:
-                    st.caption("Dùng **thanh thời gian** phía dưới bản đồ để xem đường optimal vẽ dần từ điểm đầu đến điểm cuối (từng cặp OD/commodity).")
+                    st.caption("Use **time slider** below map to see optimal route animate from origin to destination (each OD/commodity).")
                     animation_on_map = True
             else:
                 st.warning("Coordinates need WGS84. Install pyproj.")
@@ -397,7 +397,7 @@ with tab_scenario:
                 commodity=st.session_state.commodity,
             )
             if fig_anim:
-                st.markdown("**Đường chuyển động theo cặp OD (commodity)** — bấm ▶ Phát để xem tuyến vẽ dần từ điểm đầu đến điểm cuối.")
+                st.markdown("**Animated route per OD (commodity)** — click ▶ Play to see route animate from origin to destination.")
                 st.plotly_chart(fig_anim, use_container_width=True, key=f"scenario_animated_{st.session_state.period}_{st.session_state.commodity}")
         st.markdown("""
         <div class="gemini-card" style="margin-top: 1.25rem;">
@@ -477,11 +477,11 @@ with tab_scenario:
         _opt_label = f"Optimal ({st.session_state.commodity})" if st.session_state.commodity else "Optimal Route"
         st.markdown(f"""
         <div id="map-legend-box" class="map-legend-box" style="background: #f1f5f9; padding: 0.75rem 1rem; border-radius: 8px; margin: 0.5rem 0; font-size: 0.85rem; border: 1px solid #e2e8f0;">
-            <p style="margin: 0 0 0.4rem 0; font-weight: 600;">Chú thích bản đồ</p>
-            <p style="margin: 0.25rem 0;"><span style="color: #78350f;">━━</span> Đường bộ (hiện có) &nbsp; <span style="color: #b45309;">╌╌</span> Đường bộ (dự án)</p>
-            <p style="margin: 0.25rem 0;"><span style="color: #0369a1;">━━</span> Đường thủy (hiện có) &nbsp; <span style="color: #0ea5e9;">╌╌</span> Đường thủy (dự án)</p>
+            <p style="margin: 0 0 0.4rem 0; font-weight: 600;">Map legend</p>
+            <p style="margin: 0.25rem 0;"><span style="color: #78350f;">━━</span> Road (existing) &nbsp; <span style="color: #b45309;">╌╌</span> Road (project)</p>
+            <p style="margin: 0.25rem 0;"><span style="color: #0369a1;">━━</span> Waterway (existing) &nbsp; <span style="color: #0ea5e9;">╌╌</span> Waterway (project)</p>
             <p style="margin: 0.25rem 0;"><span style="color: #27ae60;">━━</span> {_opt_label}</p>
-            <p style="margin: 0.25rem 0;"><span style="color: #16a34a;">●</span> Hub Mới &nbsp; <span style="color: #7c3aed;">●</span> Hub Nâng cấp &nbsp; <span style="color: #ea580c;">●</span> Hub Hiện có &nbsp; <span style="color: #2563eb;">●</span> Node thường</p>
+            <p style="margin: 0.25rem 0;"><span style="color: #16a34a;">●</span> New Hub &nbsp; <span style="color: #7c3aed;">●</span> Upgraded Hub &nbsp; <span style="color: #ea580c;">●</span> Existing Hub &nbsp; <span style="color: #2563eb;">●</span> Regular Node</p>
         </div>
         """, unsafe_allow_html=True)
         if scenario_type == "Increase Switching Cost":
@@ -566,7 +566,7 @@ with tab_network:
                 )
                 if folium_map:
                     st_folium(folium_map, width=None, height=500, key="net_folium")
-                    st.caption("Dùng **thanh thời gian** dưới bản đồ để xem đường optimal vẽ dần từ đầu đến cuối.")
+                    st.caption("Use **time slider** below map to see optimal route animate.")
                     net_animation_on_map = True
                 else:
                     fig = services['graph'].visualize_network_interactive(
@@ -589,7 +589,7 @@ with tab_network:
                     commodity=st.session_state.commodity,
                 )
                 if fig_anim:
-                    st.markdown("**Đường chuyển động theo cặp OD** — ▶ Phát để xem tuyến vẽ dần.")
+                    st.markdown("**Animated route per OD** — ▶ Play to see route animate.")
                     st.plotly_chart(fig_anim, use_container_width=True, key="net_animated")
         with col_n2:
             results = st.session_state.optimization_results

@@ -1,16 +1,42 @@
 {
   "region": "Mekong",
   "period": 1,
-  "total_cost": 2767739898.9898996,
-  "total_time": 1094924.2424242424,
-  "num_hubs": 0,
-  "selected_hubs": [],
+  "total_cost": 560555555.5555514,
+  "total_time": 219979.79797979392,
+  "num_hubs": 25,
+  "selected_hubs": [
+    7,
+    11,
+    15,
+    16,
+    17,
+    18,
+    19,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    32,
+    33,
+    34,
+    35,
+    41,
+    10,
+    12,
+    13
+  ],
   "efficiency": 0.85,
   "solver_status": "optimal",
-  "solve_time": 0.11197018623352051,
+  "solve_time": 1.9288148880004883,
   "num_routes": 20,
   "total_routes_found": 37,
-  "total_demand": 200000.00000000023,
+  "total_demand": 40000.0,
   "top_routes": [
     {
       "route_id": 1,
@@ -23,15 +49,15 @@
       ],
       "commodity": "Passenger",
       "mode": "multi-modal",
-      "cost": 23333333.333333336,
+      "cost": 4666666.666666667,
       "time": 28.0,
-      "flow": 8333.333333333334,
+      "flow": 1666.6666666666667,
       "flow_ratio": 1.0,
       "od_pair": [
         0,
         14
       ],
-      "demand_od": 8333.333333333334,
+      "demand_od": 1666.6666666666667,
       "path_labels": [
         "HCM City",
         "",
@@ -51,26 +77,28 @@
         46,
         48,
         51,
-        14,
+        52,
+        55,
         15
       ],
       "commodity": "Passenger",
-      "mode": "multi-modal",
-      "cost": 28333333.333333336,
-      "time": 34.0,
-      "flow": 8333.333333333334,
+      "mode": "road",
+      "cost": 7333333.333333334,
+      "time": 44.0,
+      "flow": 1666.6666666666667,
       "flow_ratio": 1.0,
       "od_pair": [
         0,
         15
       ],
-      "demand_od": 8333.333333333334,
+      "demand_od": 1666.6666666666667,
       "path_labels": [
         "HCM City",
         "",
         "",
         "",
-        "Kho Cảng Cần thơ",
+        "",
+        "",
         "Kho Cảng Trung tâm vùng C_n th_"
       ],
       "origin": 0,
@@ -92,15 +120,15 @@
       ],
       "commodity": "Passenger",
       "mode": "multi-modal",
-      "cost": 25833333.333333336,
+      "cost": 5166666.666666667,
       "time": 31.0,
-      "flow": 8333.333333333334,
+      "flow": 1666.6666666666667,
       "flow_ratio": 1.0,
       "od_pair": [
         21,
         0
       ],
-      "demand_od": 8333.333333333334,
+      "demand_od": 1666.6666666666667,
       "path_labels": [
         "Cửa Khẩu Hà Tiên - Hub Hà Tiên",
         "Cảng Bình Trị",
@@ -128,15 +156,15 @@
       ],
       "commodity": "Passenger",
       "mode": "road",
-      "cost": 30000000.000000004,
+      "cost": 6000000.0,
       "time": 36.0,
-      "flow": 8333.333333333334,
+      "flow": 1666.6666666666667,
       "flow_ratio": 1.0,
       "od_pair": [
         21,
         30
       ],
-      "demand_od": 8333.333333333334,
+      "demand_od": 1666.6666666666667,
       "path_labels": [
         "Cửa Khẩu Hà Tiên - Hub Hà Tiên",
         "",
@@ -162,15 +190,15 @@
       ],
       "commodity": "Passenger",
       "mode": "multi-modal",
-      "cost": 25833333.333333336,
-      "time": 31.0,
-      "flow": 8333.333333333334,
+      "cost": 5666666.666666667,
+      "time": 34.0,
+      "flow": 1666.6666666666667,
       "flow_ratio": 1.0,
       "od_pair": [
         25,
         0
       ],
-      "demand_od": 8333.333333333334,
+      "demand_od": 1666.6666666666667,
       "path_labels": [
         "Kho Cảng Rạch Giá Kiên giang",
         "Cảng Hub Mỹ Thanh - An giang Mỹ thới",
@@ -193,15 +221,15 @@
       ],
       "commodity": "Passenger",
       "mode": "multi-modal",
-      "cost": 7500000.000000001,
+      "cost": 1500000.0,
       "time": 9.0,
-      "flow": 8333.333333333334,
+      "flow": 1666.6666666666667,
       "flow_ratio": 1.0,
       "od_pair": [
         25,
         30
       ],
-      "demand_od": 8333.333333333334,
+      "demand_od": 1666.6666666666667,
       "path_labels": [
         "Kho Cảng Rạch Giá Kiên giang",
         "Kho lạnh Rạch giá - Hub Cảng Tắc cậu",
@@ -221,15 +249,15 @@
       ],
       "commodity": "Rice",
       "mode": "water",
-      "cost": 1666666.6666666667,
+      "cost": 333333.3333333333,
       "time": 3.0,
-      "flow": 5555.555555555556,
+      "flow": 1111.111111111111,
       "flow_ratio": 1.0,
       "od_pair": [
         6,
         0
       ],
-      "demand_od": 5555.555555555556,
+      "demand_od": 1111.111111111111,
       "path_labels": [
         "Cảng Mỹ Thới Tiền Giang",
         "Cảng Nhơn Đức",
@@ -245,24 +273,26 @@
       "path": [
         10,
         51,
-        14,
+        52,
+        55,
         15
       ],
       "commodity": "Rice",
-      "mode": "multi-modal",
-      "cost": 10000000.0,
-      "time": 18.0,
-      "flow": 5555.555555555556,
+      "mode": "road",
+      "cost": 3111111.111111111,
+      "time": 28.0,
+      "flow": 1111.111111111111,
       "flow_ratio": 1.0,
       "od_pair": [
         10,
         15
       ],
-      "demand_od": 5555.555555555556,
+      "demand_od": 1111.111111111111,
       "path_labels": [
         "Hub Cảng Cao Lãnh - Cảng Sa Đéc",
         "",
-        "Kho Cảng Cần thơ",
+        "",
+        "",
         "Kho Cảng Trung tâm vùng C_n th_"
       ],
       "origin": 10,
@@ -275,24 +305,24 @@
       "path": [
         11,
         13,
-        14,
+        37,
         15
       ],
       "commodity": "Rice",
       "mode": "road",
-      "cost": 7222222.222222222,
+      "cost": 1444444.4444444445,
       "time": 13.0,
-      "flow": 5555.555555555556,
+      "flow": 1111.111111111111,
       "flow_ratio": 1.0,
       "od_pair": [
         11,
         15
       ],
-      "demand_od": 5555.555555555556,
+      "demand_od": 1111.111111111111,
       "path_labels": [
         "Hub Cao Lãnh - Cảng Trần quốc toản",
         "Cảng Hub Mỹ Thanh - An giang Mỹ thới",
-        "Kho Cảng Cần thơ",
+        "Cảng Bình Minh",
         "Kho Cảng Trung tâm vùng C_n th_"
       ],
       "origin": 11,
@@ -312,15 +342,15 @@
       ],
       "commodity": "Rice",
       "mode": "multi-modal",
-      "cost": 10555555.555555556,
+      "cost": 2111111.111111111,
       "time": 19.0,
-      "flow": 5555.555555555556,
+      "flow": 1111.111111111111,
       "flow_ratio": 1.0,
       "od_pair": [
         12,
         0
       ],
-      "demand_od": 5555.555555555556,
+      "demand_od": 1111.111111111111,
       "path_labels": [
         "Cảng Vĩnh Xương - Tân Châu",
         "Cảng Hồng Ngự",
@@ -345,15 +375,15 @@
       ],
       "commodity": "Rice",
       "mode": "road",
-      "cost": 15555555.555555556,
+      "cost": 3111111.111111111,
       "time": 28.0,
-      "flow": 5555.555555555556,
+      "flow": 1111.111111111111,
       "flow_ratio": 1.0,
       "od_pair": [
         13,
         0
       ],
-      "demand_od": 5555.555555555556,
+      "demand_od": 1111.111111111111,
       "path_labels": [
         "Cảng Hub Mỹ Thanh - An giang Mỹ thới",
         "",
@@ -377,15 +407,15 @@
       ],
       "commodity": "Rice",
       "mode": "multi-modal",
-      "cost": 15555555.555555556,
+      "cost": 3111111.111111111,
       "time": 28.0,
-      "flow": 5555.555555555556,
+      "flow": 1111.111111111111,
       "flow_ratio": 1.0,
       "od_pair": [
         14,
         0
       ],
-      "demand_od": 5555.555555555556,
+      "demand_od": 1111.111111111111,
       "path_labels": [
         "Kho Cảng Cần thơ",
         "",
@@ -409,15 +439,15 @@
       ],
       "commodity": "Rice",
       "mode": "road",
-      "cost": 15555555.555555556,
+      "cost": 3111111.111111111,
       "time": 28.0,
-      "flow": 5555.555555555556,
+      "flow": 1111.111111111111,
       "flow_ratio": 1.0,
       "od_pair": [
         16,
         0
       ],
-      "demand_od": 5555.555555555556,
+      "demand_od": 1111.111111111111,
       "path_labels": [
         "Cảng Đại Ngải",
         "",
@@ -443,15 +473,15 @@
       ],
       "commodity": "Rice",
       "mode": "multi-modal",
-      "cost": 15555555.555555556,
-      "time": 28.0,
-      "flow": 5555.555555555556,
+      "cost": 3333333.3333333335,
+      "time": 30.0,
+      "flow": 1111.111111111111,
       "flow_ratio": 1.0,
       "od_pair": [
         19,
         0
       ],
-      "demand_od": 5555.555555555556,
+      "demand_od": 1111.111111111111,
       "path_labels": [
         "Cửa Khẩu Tinh Biên - Kho cửa khẩu An giang",
         "",
@@ -480,15 +510,15 @@
       ],
       "commodity": "Rice",
       "mode": "road",
-      "cost": 28888888.888888888,
+      "cost": 5777777.777777778,
       "time": 52.0,
-      "flow": 5555.555555555556,
+      "flow": 1111.111111111111,
       "flow_ratio": 1.0,
       "od_pair": [
         27,
         0
       ],
-      "demand_od": 5555.555555555556,
+      "demand_od": 1111.111111111111,
       "path_labels": [
         "Hub Vĩ Thanh",
         "",
@@ -510,25 +540,25 @@
         12,
         38,
         13,
-        14,
+        37,
         15
       ],
       "commodity": "Fisheries",
       "mode": "road",
-      "cost": 7727272.727272727,
+      "cost": 1545454.5454545454,
       "time": 17.0,
-      "flow": 4545.454545454545,
+      "flow": 909.0909090909091,
       "flow_ratio": 1.0,
       "od_pair": [
         12,
         15
       ],
-      "demand_od": 4545.454545454545,
+      "demand_od": 909.0909090909091,
       "path_labels": [
         "Cảng Vĩnh Xương - Tân Châu",
         "Cảng Bình Long",
         "Cảng Hub Mỹ Thanh - An giang Mỹ thới",
-        "Kho Cảng Cần thơ",
+        "Cảng Bình Minh",
         "Kho Cảng Trung tâm vùng C_n th_"
       ],
       "origin": 12,
@@ -549,15 +579,15 @@
       ],
       "commodity": "Fisheries",
       "mode": "road",
-      "cost": 20000000.0,
+      "cost": 4000000.0,
       "time": 44.0,
-      "flow": 4545.454545454545,
+      "flow": 909.0909090909091,
       "flow_ratio": 1.0,
       "od_pair": [
         19,
         15
       ],
-      "demand_od": 4545.454545454545,
+      "demand_od": 909.0909090909091,
       "path_labels": [
         "Cửa Khẩu Tinh Biên - Kho cửa khẩu An giang",
         "",
@@ -583,15 +613,15 @@
       ],
       "commodity": "Fisheries",
       "mode": "multi-modal",
-      "cost": 11818181.818181816,
+      "cost": 2363636.3636363638,
       "time": 26.0,
-      "flow": 4545.454545454545,
+      "flow": 909.0909090909091,
       "flow_ratio": 1.0,
       "od_pair": [
         20,
         15
       ],
-      "demand_od": 4545.454545454545,
+      "demand_od": 909.0909090909091,
       "path_labels": [
         "Cửa khẩu Giang Thanh",
         "",
@@ -618,15 +648,15 @@
       ],
       "commodity": "Fisheries",
       "mode": "multi-modal",
-      "cost": 14090909.09090909,
+      "cost": 2818181.8181818184,
       "time": 31.0,
-      "flow": 4545.454545454545,
+      "flow": 909.0909090909091,
       "flow_ratio": 1.0,
       "od_pair": [
         21,
         0
       ],
-      "demand_od": 4545.454545454545,
+      "demand_od": 909.0909090909091,
       "path_labels": [
         "Cửa Khẩu Hà Tiên - Hub Hà Tiên",
         "Cảng Bình Trị",
@@ -653,15 +683,15 @@
       ],
       "commodity": "Fisheries",
       "mode": "multi-modal",
-      "cost": 11818181.818181816,
+      "cost": 2363636.3636363638,
       "time": 26.0,
-      "flow": 4545.454545454545,
+      "flow": 909.0909090909091,
       "flow_ratio": 1.0,
       "od_pair": [
         21,
         15
       ],
-      "demand_od": 4545.454545454545,
+      "demand_od": 909.0909090909091,
       "path_labels": [
         "Cửa Khẩu Hà Tiên - Hub Hà Tiên",
         "",
@@ -675,24 +705,237 @@
       "destination_name": "Kho Cảng Trung tâm vùng C_n th_"
     }
   ],
-  "hub_utilization": {},
+  "hub_utilization": {
+    "7": 9.090909090898931e-05,
+    "11": 0.00038383838383838383,
+    "15": 0.0007525252525252524,
+    "16": 0.00020202020202020202,
+    "17": 9.090909090909092e-05,
+    "18": 9.090909090909092e-05,
+    "19": 0.00020202020202020202,
+    "21": 0.0006060606060606061,
+    "22": 0.0,
+    "23": 0.0,
+    "24": 9.090909090889618e-05,
+    "25": 0.0005151515151515152,
+    "26": 0.0002575757575757576,
+    "27": 0.00029292929292929295,
+    "28": 0.0018181818181807175,
+    "29": 9.090909090903588e-05,
+    "30": 0.0006060606060606061,
+    "32": 9.090909090909092e-05,
+    "33": 0.0,
+    "34": 0.0,
+    "35": 0.0,
+    "41": 0.0,
+    "10": 0.00020202020202020202,
+    "12": 0.00020202020202020202,
+    "13": 0.0005271464646464647
+  },
   "modal_split": {
-    "road": 0.32304526748971185,
-    "water": 0.045267489711934145,
-    "multi-modal": 0.6316872427983536
+    "road": 0.43621399176954745,
+    "water": 0.04526748971193417,
+    "multi-modal": 0.5185185185185187
   },
   "cost_breakdown": {
-    "transportation": 548207070.7070707,
-    "hub_service": 546717171.7171717,
-    "mode_switching": 20959595.959595963,
-    "hub_upgrade": 0.0,
-    "arc_upgrade": 0.0
+    "transportation": 113414141.4141414,
+    "hub_service": 106565656.5656525,
+    "mode_switching": 9545454.54545455,
+    "hub_upgrade": 45100000000.0,
+    "arc_upgrade": 526999967180.0
   },
-  "hub_levels": {},
+  "hub_levels": {
+    "7": {
+      "hub": 7,
+      "period": 1,
+      "level": 2,
+      "capacity": 10000000.0
+    },
+    "11": {
+      "hub": 11,
+      "period": 1,
+      "level": 2,
+      "capacity": 10000000.0
+    },
+    "15": {
+      "hub": 15,
+      "period": 1,
+      "level": 2,
+      "capacity": 10000000.0
+    },
+    "16": {
+      "hub": 16,
+      "period": 1,
+      "level": 2,
+      "capacity": 10000000.0
+    },
+    "17": {
+      "hub": 17,
+      "period": 1,
+      "level": 2,
+      "capacity": 10000000.0
+    },
+    "18": {
+      "hub": 18,
+      "period": 1,
+      "level": 2,
+      "capacity": 10000000.0
+    },
+    "19": {
+      "hub": 19,
+      "period": 1,
+      "level": 2,
+      "capacity": 10000000.0
+    },
+    "21": {
+      "hub": 21,
+      "period": 1,
+      "level": 2,
+      "capacity": 10000000.0
+    },
+    "22": {
+      "hub": 22,
+      "period": 1,
+      "level": 2,
+      "capacity": 10000000.0
+    },
+    "23": {
+      "hub": 23,
+      "period": 1,
+      "level": 1,
+      "capacity": 500000.0
+    },
+    "24": {
+      "hub": 24,
+      "period": 1,
+      "level": 2,
+      "capacity": 10000000.0
+    },
+    "25": {
+      "hub": 25,
+      "period": 1,
+      "level": 2,
+      "capacity": 10000000.0
+    },
+    "26": {
+      "hub": 26,
+      "period": 1,
+      "level": 2,
+      "capacity": 10000000.0
+    },
+    "27": {
+      "hub": 27,
+      "period": 1,
+      "level": 2,
+      "capacity": 10000000.0
+    },
+    "28": {
+      "hub": 28,
+      "period": 1,
+      "level": 1,
+      "capacity": 500000.0
+    },
+    "29": {
+      "hub": 29,
+      "period": 1,
+      "level": 2,
+      "capacity": 10000000.0
+    },
+    "30": {
+      "hub": 30,
+      "period": 1,
+      "level": 2,
+      "capacity": 10000000.0
+    },
+    "32": {
+      "hub": 32,
+      "period": 1,
+      "level": 2,
+      "capacity": 10000000.0
+    },
+    "33": {
+      "hub": 33,
+      "period": 1,
+      "level": 2,
+      "capacity": 10000000.0
+    },
+    "34": {
+      "hub": 34,
+      "period": 1,
+      "level": 2,
+      "capacity": 10000000.0
+    },
+    "35": {
+      "hub": 35,
+      "period": 1,
+      "level": 2,
+      "capacity": 10000000.0
+    },
+    "41": {
+      "hub": 41,
+      "period": 1,
+      "level": 2,
+      "capacity": 10000000.0
+    },
+    "10": {
+      "hub": 10,
+      "period": 1,
+      "level": 1,
+      "capacity": 10000000.0
+    },
+    "12": {
+      "hub": 12,
+      "period": 1,
+      "level": 1,
+      "capacity": 10000000.0
+    },
+    "13": {
+      "hub": 13,
+      "period": 1,
+      "level": 2,
+      "capacity": 16000000.0
+    }
+  },
   "arc_upgrades": [
+    {
+      "from": 0,
+      "to": 46,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 0,
+      "to": 75,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 1,
+      "to": 2,
+      "mode": "waterway",
+      "period": 1
+    },
     {
       "from": 10,
       "to": 11,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 10,
+      "to": 51,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 11,
+      "to": 10,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 11,
+      "to": 13,
       "mode": "road",
       "period": 1
     },
@@ -712,6 +955,36 @@
       "from": 13,
       "to": 11,
       "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 13,
+      "to": 14,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 13,
+      "to": 14,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 13,
+      "to": 37,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 13,
+      "to": 38,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 13,
+      "to": 38,
+      "mode": "waterway",
       "period": 1
     },
     {
@@ -746,6 +1019,18 @@
     },
     {
       "from": 14,
+      "to": 15,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 14,
+      "to": 37,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 14,
       "to": 51,
       "mode": "waterway",
       "period": 1
@@ -763,6 +1048,12 @@
       "period": 1
     },
     {
+      "from": 15,
+      "to": 55,
+      "mode": "road",
+      "period": 1
+    },
+    {
       "from": 16,
       "to": 37,
       "mode": "waterway",
@@ -776,7 +1067,19 @@
     },
     {
       "from": 16,
+      "to": 62,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 16,
       "to": 63,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 16,
+      "to": 73,
       "mode": "road",
       "period": 1
     },
@@ -784,6 +1087,12 @@
       "from": 17,
       "to": 36,
       "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 17,
+      "to": 36,
+      "mode": "waterway",
       "period": 1
     },
     {
@@ -800,7 +1109,25 @@
     },
     {
       "from": 18,
+      "to": 63,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 18,
+      "to": 67,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 18,
       "to": 73,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 19,
+      "to": 20,
       "mode": "road",
       "period": 1
     },
@@ -817,8 +1144,20 @@
       "period": 1
     },
     {
+      "from": 2,
+      "to": 8,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
       "from": 20,
       "to": 19,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 20,
+      "to": 21,
       "mode": "road",
       "period": 1
     },
@@ -829,6 +1168,36 @@
       "period": 1
     },
     {
+      "from": 21,
+      "to": 40,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 21,
+      "to": 40,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 21,
+      "to": 65,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 23,
+      "to": 24,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 23,
+      "to": 24,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
       "from": 23,
       "to": 40,
       "mode": "road",
@@ -837,6 +1206,12 @@
     {
       "from": 23,
       "to": 40,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 23,
+      "to": 42,
       "mode": "waterway",
       "period": 1
     },
@@ -853,6 +1228,18 @@
       "period": 1
     },
     {
+      "from": 24,
+      "to": 25,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 24,
+      "to": 25,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
       "from": 25,
       "to": 24,
       "mode": "road",
@@ -862,6 +1249,12 @@
       "from": 25,
       "to": 24,
       "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 25,
+      "to": 26,
+      "mode": "road",
       "period": 1
     },
     {
@@ -883,6 +1276,18 @@
       "period": 1
     },
     {
+      "from": 26,
+      "to": 72,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 26,
+      "to": 74,
+      "mode": "road",
+      "period": 1
+    },
+    {
       "from": 27,
       "to": 56,
       "mode": "road",
@@ -890,8 +1295,32 @@
     },
     {
       "from": 27,
+      "to": 70,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 27,
       "to": 74,
       "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 3,
+      "to": 45,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 30,
+      "to": 31,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 30,
+      "to": 68,
+      "mode": "road",
       "period": 1
     },
     {
@@ -907,8 +1336,26 @@
       "period": 1
     },
     {
+      "from": 31,
+      "to": 33,
+      "mode": "road",
+      "period": 1
+    },
+    {
       "from": 33,
       "to": 31,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 33,
+      "to": 42,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 36,
+      "to": 17,
       "mode": "road",
       "period": 1
     },
@@ -938,8 +1385,38 @@
     },
     {
       "from": 37,
+      "to": 15,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 37,
+      "to": 16,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 37,
+      "to": 52,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 37,
+      "to": 55,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 37,
       "to": 58,
       "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 37,
+      "to": 61,
+      "mode": "road",
       "period": 1
     },
     {
@@ -955,8 +1432,44 @@
       "period": 1
     },
     {
+      "from": 38,
+      "to": 53,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 38,
+      "to": 53,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 39,
+      "to": 11,
+      "mode": "road",
+      "period": 1
+    },
+    {
       "from": 39,
       "to": 4,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 39,
+      "to": 53,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 39,
+      "to": 5,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 4,
+      "to": 39,
       "mode": "road",
       "period": 1
     },
@@ -975,6 +1488,18 @@
     {
       "from": 40,
       "to": 21,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 40,
+      "to": 23,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 40,
+      "to": 23,
       "mode": "waterway",
       "period": 1
     },
@@ -1004,7 +1529,19 @@
     },
     {
       "from": 44,
+      "to": 19,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 44,
       "to": 53,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 44,
+      "to": 69,
       "mode": "road",
       "period": 1
     },
@@ -1015,8 +1552,32 @@
       "period": 1
     },
     {
+      "from": 45,
+      "to": 47,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 45,
+      "to": 49,
+      "mode": "road",
+      "period": 1
+    },
+    {
       "from": 46,
       "to": 0,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 46,
+      "to": 47,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 46,
+      "to": 48,
       "mode": "road",
       "period": 1
     },
@@ -1029,6 +1590,12 @@
     {
       "from": 47,
       "to": 46,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 47,
+      "to": 6,
       "mode": "road",
       "period": 1
     },
@@ -1039,8 +1606,32 @@
       "period": 1
     },
     {
+      "from": 48,
+      "to": 51,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 49,
+      "to": 11,
+      "mode": "road",
+      "period": 1
+    },
+    {
       "from": 49,
       "to": 45,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 49,
+      "to": 4,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 49,
+      "to": 50,
       "mode": "road",
       "period": 1
     },
@@ -1069,9 +1660,27 @@
       "period": 1
     },
     {
+      "from": 50,
+      "to": 9,
+      "mode": "road",
+      "period": 1
+    },
+    {
       "from": 51,
       "to": 10,
       "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 51,
+      "to": 13,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 51,
+      "to": 14,
+      "mode": "waterway",
       "period": 1
     },
     {
@@ -1082,7 +1691,25 @@
     },
     {
       "from": 51,
+      "to": 50,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 51,
+      "to": 52,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 51,
       "to": 6,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 51,
+      "to": 9,
       "mode": "road",
       "period": 1
     },
@@ -1095,6 +1722,12 @@
     {
       "from": 52,
       "to": 51,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 52,
+      "to": 55,
       "mode": "road",
       "period": 1
     },
@@ -1123,6 +1756,42 @@
       "period": 1
     },
     {
+      "from": 53,
+      "to": 43,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 53,
+      "to": 43,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 53,
+      "to": 44,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 54,
+      "to": 13,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 54,
+      "to": 56,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 54,
+      "to": 66,
+      "mode": "road",
+      "period": 1
+    },
+    {
       "from": 54,
       "to": 69,
       "mode": "road",
@@ -1131,6 +1800,12 @@
     {
       "from": 55,
       "to": 15,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 55,
+      "to": 16,
       "mode": "road",
       "period": 1
     },
@@ -1147,6 +1822,18 @@
       "period": 1
     },
     {
+      "from": 55,
+      "to": 56,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 56,
+      "to": 27,
+      "mode": "road",
+      "period": 1
+    },
+    {
       "from": 56,
       "to": 54,
       "mode": "road",
@@ -1159,8 +1846,50 @@
       "period": 1
     },
     {
+      "from": 56,
+      "to": 57,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 56,
+      "to": 63,
+      "mode": "road",
+      "period": 1
+    },
+    {
       "from": 57,
       "to": 56,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 57,
+      "to": 63,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 57,
+      "to": 70,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 58,
+      "to": 37,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 58,
+      "to": 50,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 58,
+      "to": 61,
       "mode": "road",
       "period": 1
     },
@@ -1178,7 +1907,25 @@
     },
     {
       "from": 59,
+      "to": 36,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 59,
+      "to": 60,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 59,
       "to": 75,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 59,
+      "to": 9,
       "mode": "road",
       "period": 1
     },
@@ -1189,8 +1936,32 @@
       "period": 1
     },
     {
+      "from": 6,
+      "to": 51,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 6,
+      "to": 7,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 60,
+      "to": 52,
+      "mode": "road",
+      "period": 1
+    },
+    {
       "from": 60,
       "to": 59,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 60,
+      "to": 62,
       "mode": "road",
       "period": 1
     },
@@ -1214,7 +1985,31 @@
     },
     {
       "from": 62,
+      "to": 17,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 62,
+      "to": 17,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 62,
       "to": 60,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 62,
+      "to": 73,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 63,
+      "to": 16,
       "mode": "road",
       "period": 1
     },
@@ -1250,6 +2045,18 @@
     },
     {
       "from": 64,
+      "to": 63,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 64,
+      "to": 67,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 64,
       "to": 70,
       "mode": "road",
       "period": 1
@@ -1262,7 +2069,25 @@
     },
     {
       "from": 65,
+      "to": 25,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 65,
+      "to": 66,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 65,
       "to": 69,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 66,
+      "to": 26,
       "mode": "road",
       "period": 1
     },
@@ -1275,6 +2100,12 @@
     {
       "from": 66,
       "to": 65,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 66,
+      "to": 74,
       "mode": "road",
       "period": 1
     },
@@ -1304,13 +2135,37 @@
     },
     {
       "from": 69,
+      "to": 13,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 69,
       "to": 44,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 69,
+      "to": 54,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 69,
+      "to": 65,
       "mode": "road",
       "period": 1
     },
     {
       "from": 7,
       "to": 6,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 7,
+      "to": 8,
       "mode": "road",
       "period": 1
     },
@@ -1323,6 +2178,30 @@
     {
       "from": 70,
       "to": 57,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 70,
+      "to": 64,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 70,
+      "to": 71,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 71,
+      "to": 30,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 71,
+      "to": 67,
       "mode": "road",
       "period": 1
     },
@@ -1352,7 +2231,19 @@
     },
     {
       "from": 73,
+      "to": 18,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 73,
       "to": 62,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 73,
+      "to": 63,
       "mode": "road",
       "period": 1
     },
@@ -1364,8 +2255,20 @@
     },
     {
       "from": 74,
+      "to": 27,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 74,
       "to": 66,
       "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 74,
+      "to": 71,
+      "mode": "waterway",
       "period": 1
     },
     {
@@ -1375,8 +2278,26 @@
       "period": 1
     },
     {
+      "from": 75,
+      "to": 59,
+      "mode": "road",
+      "period": 1
+    },
+    {
       "from": 8,
       "to": 2,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 8,
+      "to": 58,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 8,
+      "to": 58,
       "mode": "waterway",
       "period": 1
     },
@@ -1405,8 +2326,500 @@
       "period": 1
     },
     {
+      "from": 10,
+      "to": 11,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 10,
+      "to": 51,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 11,
+      "to": 10,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 11,
+      "to": 13,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 11,
+      "to": 39,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 13,
+      "to": 11,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 13,
+      "to": 14,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 13,
+      "to": 37,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 13,
+      "to": 38,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 13,
+      "to": 14,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 13,
+      "to": 38,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 14,
+      "to": 13,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 14,
+      "to": 15,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 14,
+      "to": 13,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 14,
+      "to": 37,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 15,
+      "to": 14,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 15,
+      "to": 37,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 15,
+      "to": 55,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 16,
+      "to": 73,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 16,
+      "to": 37,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 16,
+      "to": 62,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 17,
+      "to": 36,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 17,
+      "to": 36,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 18,
+      "to": 63,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 18,
+      "to": 67,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 19,
+      "to": 20,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 1,
+      "to": 2,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 20,
+      "to": 19,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 20,
+      "to": 21,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 21,
+      "to": 20,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 21,
+      "to": 40,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 21,
+      "to": 65,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 21,
+      "to": 40,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 23,
+      "to": 24,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 23,
+      "to": 40,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 23,
+      "to": 24,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 23,
+      "to": 40,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 23,
+      "to": 42,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 24,
+      "to": 23,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 24,
+      "to": 25,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 24,
+      "to": 23,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 24,
+      "to": 25,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 25,
+      "to": 24,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 25,
+      "to": 26,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 25,
+      "to": 24,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 26,
+      "to": 25,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 26,
+      "to": 72,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 26,
+      "to": 74,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 27,
+      "to": 70,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 2,
+      "to": 1,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 2,
+      "to": 8,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 30,
+      "to": 31,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 30,
+      "to": 68,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 31,
+      "to": 30,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 31,
+      "to": 33,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 33,
+      "to": 31,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 33,
+      "to": 42,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 36,
+      "to": 17,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 36,
+      "to": 17,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 37,
+      "to": 13,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 37,
+      "to": 15,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 37,
+      "to": 52,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 37,
+      "to": 55,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 37,
+      "to": 61,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 37,
+      "to": 14,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 37,
+      "to": 16,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 38,
+      "to": 13,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 38,
+      "to": 53,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 38,
+      "to": 13,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 38,
+      "to": 53,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 39,
+      "to": 11,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 39,
+      "to": 4,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 39,
+      "to": 53,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 39,
+      "to": 5,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 3,
+      "to": 45,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 40,
+      "to": 21,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 40,
+      "to": 23,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 40,
+      "to": 21,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 40,
+      "to": 23,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 42,
+      "to": 33,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 42,
+      "to": 23,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
       "from": 45,
       "to": 3,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 4,
+      "to": 39,
       "mode": "road",
       "period": 1
     },
@@ -1471,6 +2884,12 @@
       "period": 1
     },
     {
+      "from": 5,
+      "to": 39,
+      "mode": "road",
+      "period": 1
+    },
+    {
       "from": 61,
       "to": 37,
       "mode": "road",
@@ -1507,6 +2926,18 @@
       "period": 1
     },
     {
+      "from": 6,
+      "to": 51,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 6,
+      "to": 7,
+      "mode": "road",
+      "period": 1
+    },
+    {
       "from": 70,
       "to": 27,
       "mode": "road",
@@ -1529,12 +2960,49 @@
       "to": 26,
       "mode": "road",
       "period": 1
+    },
+    {
+      "from": 7,
+      "to": 6,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 7,
+      "to": 8,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 8,
+      "to": 58,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 8,
+      "to": 7,
+      "mode": "road",
+      "period": 1
+    },
+    {
+      "from": 8,
+      "to": 2,
+      "mode": "waterway",
+      "period": 1
+    },
+    {
+      "from": 8,
+      "to": 58,
+      "mode": "waterway",
+      "period": 1
     }
   ],
   "insights": {
-    "strategy": "Multi-modal hub-and-spoke with 0 hubs selected",
+    "strategy": "Multi-modal hub-and-spoke with 25 hubs selected",
     "key_findings": [
-      "140 arcs upgraded in period 1"
+      "25 hubs selected: [7, 11, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 32, 33, 34, 35, 41, 10, 12, 13]",
+      "350 arcs upgraded in period 1"
     ]
   },
   "node_names": {
@@ -1921,5 +3389,5 @@
       1167395.309
     ]
   },
-  "export_timestamp": "2026-02-09T23:25:34.630538"
+  "export_timestamp": "2026-02-10T00:39:04.774264"
 }

@@ -1,13 +1,13 @@
 """
-File chính để chạy optimization
-Tích hợp tất cả các module đã tách ra
+Main file to run optimization
+Integrates all split modules
 """
 
 import os
 import sys
 from pathlib import Path
 
-# Import các module đã tách
+# Import split modules
 from load_data import load_all_data, save_data_to_pkl, load_data_from_pkl
 from build_graph import build_graph_structure
 from calculate_paths import calculate_all_paths, load_paths_from_pkl
@@ -15,7 +15,7 @@ from calculate_paths import calculate_all_paths, load_paths_from_pkl
 
 def main():
     """
-    Main function để chạy optimization
+    Main function to run optimization
     """
     print("\n" + "="*80)
     print("GRAPH-AWARE LOGISTICS PLANNER - OPTIMIZATION RUNNER")
@@ -32,12 +32,12 @@ def main():
     node_file = 'data/Mekong/nodes_remapped_with_coords.csv'
     data_pkl = 'data/preprocessed_data.pkl'
     
-    # Kiểm tra xem đã có file pkl chưa
+    # Check if pkl file exists
     if Path(data_pkl).exists():
-        print(f"\n✓ Tìm thấy file pkl: {data_pkl}")
-        use_pkl = input("  Sử dụng file pkl? (y/n, default=y): ").strip().lower()
+        print(f"\n✓ Found pkl file: {data_pkl}")
+        use_pkl = input("  Use pkl file? (y/n, default=y): ").strip().lower()
         if use_pkl != 'n':
-            print("  Đang đọc từ pkl...")
+            print("  Reading from pkl...")
             data_dict = load_data_from_pkl(data_pkl)
             
             # Unpack data
@@ -64,7 +64,7 @@ def main():
             existing_arcs_cap = data_dict['existing_arcs_cap']
             real_arc_upgrade_costs = data_dict['real_arc_upgrade_costs']
         else:
-            print("  Đang load từ CSV...")
+            print("  Loading from CSV...")
             result = load_all_data(node_file, arc_file)
             (edges_raw, OD_pairs, node_names, node_projects, node_type, node_coords,
              node_capacity_passenger, node_capacity_goods,
@@ -75,7 +75,7 @@ def main():
              potential_arcs_cap_0, potential_arcs_cap_up, existing_arcs_cap,
              real_arc_upgrade_costs) = result
             
-            # Lưu vào pkl
+            # Save to pkl
             data_dict = {
                 'edges_raw': edges_raw,
                 'OD_pairs': OD_pairs,
@@ -113,7 +113,7 @@ def main():
          potential_arcs_cap_0, potential_arcs_cap_up, existing_arcs_cap,
          real_arc_upgrade_costs) = result
         
-        # Lưu vào pkl
+        # Save to pkl
         data_dict = {
             'edges_raw': edges_raw,
             'OD_pairs': OD_pairs,
@@ -180,12 +180,12 @@ def main():
     
     paths_pkl = 'data/paths_data.pkl'
     
-    # Kiểm tra xem đã có file pkl chưa
+    # Check if pkl file exists
     if Path(paths_pkl).exists():
-        print(f"\n✓ Tìm thấy file pkl: {paths_pkl}")
-        use_pkl = input("  Sử dụng file pkl? (y/n, default=y): ").strip().lower()
+        print(f"\n✓ Found pkl file: {paths_pkl}")
+        use_pkl = input("  Use pkl file? (y/n, default=y): ").strip().lower()
         if use_pkl != 'n':
-            print("  Đang đọc paths từ pkl...")
+            print("  Reading paths từ pkl...")
             paths_data = load_paths_from_pkl(paths_pkl)
             paths = paths_data['paths']
             Lmin_dict = paths_data['Lmin_dict']
@@ -218,7 +218,7 @@ def main():
     print("\n" + "="*80)
     print("SUMMARY")
     print("="*80)
-    print(f"✓ Đã load data: {len(edges_raw)} arcs, {len(node_names)} nodes")
+    print(f"✓ Loaded data: {len(edges_raw)} arcs, {len(node_names)} nodes")
     print(f"✓ Đã build graph: {len(A)} arcs, {len(N_virtual)} virtual nodes")
     print(f"✓ Đã tính paths: {sum(len(p) for p in paths.values())} paths")
     print(f"\n📁 Files pkl đã tạo:")

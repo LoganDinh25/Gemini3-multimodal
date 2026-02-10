@@ -83,7 +83,7 @@ class GraphEngine:
         return filtered[:10] if filtered else routes[:10]  # Fallback to all
 
     def _resolve_node_pos(self, node_id, node_coords_opt: Dict = None) -> Optional[Tuple[float, float]]:
-        """Lấy (lon, lat) cho node - từ self.pos hoặc node_coords trong JSON."""
+        """Get (lon, lat) for node - from self.pos or node_coords in JSON."""
         if node_id in self.pos:
             return self.pos[node_id]
         if node_coords_opt:
@@ -103,7 +103,7 @@ class GraphEngine:
         return None
 
     def _to_wgs84_if_utm(self, lon: float, lat: float) -> Tuple[float, float]:
-        """Chuyển VN-2000 sang WGS84 nếu cần, để đồ thị giống bản đồ."""
+        """Convert VN-2000 to WGS84 if needed, so graph matches map."""
         if 400000 <= lon <= 800000 and 1000000 <= lat <= 1300000:
             try:
                 from coordinate_utils import convert_vn2000_to_wgs84
@@ -123,7 +123,7 @@ class GraphEngine:
     ) -> go.Figure:
         """
         Create interactive network visualization with Plotly
-        Dùng WGS84 khi có để hiển thị giống bản đồ; vẽ đường tối ưu màu xanh.
+        Use WGS84 when available to match map; draw optimal route in green.
         """
         G = self.build_graph(nodes, edges)
         node_positions = nx.get_node_attributes(G, 'pos')
@@ -143,7 +143,7 @@ class GraphEngine:
             self.pos = nx.spring_layout(G, k=2, iterations=50, seed=42)
         
         edge_traces = []
-        # Edges: mode + project (E=existing đậm, P=potential nhạt)
+        # Edges: mode + project (E=existing bold, P=potential light)
         edge_styles = [
             ('road', 'E', '#78350f', 3),
             ('road', 'P', '#b45309', 1.5),
@@ -176,7 +176,7 @@ class GraphEngine:
                         hoverinfo='none', mode='lines', name=label, showlegend=True
                     ))
         
-        # Đường tối ưu màu xanh - dùng node_coords từ JSON nếu thiếu pos
+        # Optimal route in green - dùng node_coords từ JSON nếu thiếu pos
         if highlight_paths and optimization_results:
             top_routes = self._filter_routes_by_commodity(optimization_results, commodity)
             for route in top_routes[:5]:
@@ -214,12 +214,12 @@ class GraphEngine:
                 mode='markers+text', text=[G.nodes[n].get('label', str(n)) for n in norm_in_pos],
                 textposition="top center", hoverinfo='text',
                 marker=dict(size=12, color='#60a5fa', line=dict(width=2, color='#3b82f6')),
-                name='Node thường', showlegend=True
+                name='Regular Node', showlegend=True
             ))
         for nlist, color, size, label in [
-            (hub_new, '#22c55e', 18, 'Hub Mới'),
-            (hub_upgrade, '#a78bfa', 16, 'Hub Nâng cấp'),
-            (hub_existing, '#f97316', 14, 'Hub Hiện có'),
+            (hub_new, '#22c55e', 18, 'New Hub'),
+            (hub_upgrade, '#a78bfa', 16, 'Upgraded Hub'),
+            (hub_existing, '#f97316', 14, 'Existing Hub'),
         ]:
             if nlist:
                 nlist = [n for n in nlist if n in self.pos]
@@ -234,13 +234,13 @@ class GraphEngine:
         
         fig = go.Figure(data=edge_traces + node_traces)
         
-        # Layout giống bản đồ khi có tọa độ địa lý
+        # Layout matches map khi có tọa độ địa lý
         is_geo = all(
             8 <= p[1] <= 12 and 103 <= p[0] <= 108
             for p in (list(self.pos.values())[:3] if self.pos else [])
         )
         layout_kw = dict(
-            title=dict(text='Mạng lưới vận tải', font=dict(size=18, color='#1e293b')),
+            title=dict(text='Transport Network', font=dict(size=18, color='#1e293b')),
             showlegend=True,
             hovermode='closest',
             margin=dict(b=20, l=20, r=20, t=50),
@@ -267,8 +267,8 @@ class GraphEngine:
         commodity: Optional[str] = None,
     ) -> Optional[go.Figure]:
         """
-        Plotly figure với animation: đường optimal vẽ dần từ điểm đầu đến điểm cuối
-        cho từng tuyến/cặp OD (commodity). Dùng frames + play button.
+        Plotly figure với animation: optimal route animates from origin to destination
+        for each route/OD pair (commodity). Dùng frames + play button.
         """
         if not optimization_results:
             return None
@@ -331,7 +331,7 @@ class GraphEngine:
                 lbl = str(route.get('commodity', '') or '')
                 if not lbl and (route.get('origin') or route.get('destination')):
                     lbl = f"{route.get('origin', '')}→{route.get('destination', '')}"
-                path_labels.append(lbl or f"Tuyến {len(path_coords_list)+1}")
+                path_labels.append(lbl or f"Route {len(path_coords_list)+1}")
 
         if not path_coords_list:
             return None
@@ -348,12 +348,12 @@ class GraphEngine:
                 mode='markers+text', text=[G.nodes[n].get('label', str(n)) for n in norm_in_pos],
                 textposition="top center", hoverinfo='text',
                 marker=dict(size=12, color='#60a5fa', line=dict(width=2, color='#3b82f6')),
-                name='Node thường', showlegend=True
+                name='Regular Node', showlegend=True
             ))
         for nlist, color, size, label in [
-            (hub_new, '#22c55e', 18, 'Hub Mới'),
-            (hub_upgrade, '#a78bfa', 16, 'Hub Nâng cấp'),
-            (hub_existing, '#f97316', 14, 'Hub Hiện có'),
+            (hub_new, '#22c55e', 18, 'New Hub'),
+            (hub_upgrade, '#a78bfa', 16, 'Upgraded Hub'),
+            (hub_existing, '#f97316', 14, 'Existing Hub'),
         ]:
             if nlist:
                 nlist = [n for n in nlist if n in self.pos]
@@ -401,7 +401,7 @@ class GraphEngine:
             for p in (list(self.pos.values())[:3] if self.pos else [])
         )
         layout_kw = dict(
-            title=dict(text='Đường chuyển động theo cặp OD (commodity)', font=dict(size=18, color='#1e293b')),
+            title=dict(text='Animated route per OD pair (commodity)', font=dict(size=18, color='#1e293b')),
             showlegend=True,
             hovermode='closest',
             margin=dict(b=20, l=20, r=20, t=50),
@@ -416,8 +416,8 @@ class GraphEngine:
                 type='buttons',
                 showactive=False,
                 buttons=[
-                    dict(label='▶ Phát', method='animate', args=[None, dict(frame=dict(duration=120, redraw=True), fromcurrent=True, mode='immediate')]),
-                    dict(label='⏸ Tạm dừng', method='animate', args=[[None], dict(mode='immediate')]),
+                    dict(label='▶ Play', method='animate', args=[None, dict(frame=dict(duration=120, redraw=True), fromcurrent=True, mode='immediate')]),
+                    dict(label='⏸ Pause', method='animate', args=[[None], dict(mode='immediate')]),
                 ],
                 x=0.1, xanchor='left', y=0, yanchor='top',
             )],
@@ -750,7 +750,7 @@ class GraphEngine:
     ):
         """
         Render logistics network on Folium map.
-        use_osm_tiles=True: OpenStreetMap. use_osm_tiles=False: CartoDB Positron (nền nhạt, giống đồ thị).
+        use_osm_tiles=True: OpenStreetMap. use_osm_tiles=False: CartoDB Positron (light background, like graph).
         """
         if not _HAS_FOLIUM:
             return None
@@ -788,7 +788,7 @@ class GraphEngine:
         if center_lon is None:
             center_lon = valid_nodes['lon'].mean()
         
-        # OSM = bản đồ thực tế; tiles=None = không map, nền trắng
+        # OSM = actual map; tiles=None = no map, white bg
         if use_osm_tiles:
             m = folium.Map(
                 location=[center_lat, center_lon],
@@ -803,7 +803,7 @@ class GraphEngine:
                 tiles=None,
                 control_scale=True
             )
-            # Nền trắng khi không có map
+            # White bg when no map
             m.get_root().html.add_child(folium.Element("""
             <style>
                 .leaflet-container { background: #f8fafc !important; }
@@ -901,10 +901,10 @@ class GraphEngine:
                 popup='Optimal route'
             ).add_to(m)
 
-        # Animation ngay trên bản đồ OSM: tuyến xanh, icon pin Leaflet (marker-icon-2x) mỗi tuyến một màu
+        # Animation ngay trên bản đồ OSM: green route, pin icon Leaflet (marker-icon-2x) each route one color
         if optimal_paths_for_animation and hasattr(folium, 'plugins'):
             try:
-                # Pin cùng kiểu Leaflet, nhiều màu (leaflet-color-markers)
+                # Same Leaflet pin style, nhiều màu (leaflet-color-markers)
                 marker_colors = ["blue", "red", "green", "orange", "violet", "gold", "yellow", "grey"]
                 base_url = "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img"
                 shadow_url = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png"
@@ -938,7 +938,7 @@ class GraphEngine:
                     })
                 if features:
                     geojson = {"type": "FeatureCollection", "features": features}
-                    # duration: đường đã vẽ giữ hiển thị (không biến mất); period: bước thời gian
+                    # duration: drawn route stays visible (does not disappear); period: time step
                     folium.plugins.TimestampedGeoJson(
                         geojson,
                         period="PT1S",
@@ -970,17 +970,17 @@ class GraphEngine:
             name = node.get('name', f'Node {nid}')
             
             if nid in hub_new:
-                color, fill_color, radius = '#16a34a', '#22c55e', 10  # Xanh lá đậm
-                node_type = 'Hub Mới'
+                color, fill_color, radius = '#16a34a', '#22c55e', 10  # Dark green
+                node_type = 'New Hub'
             elif nid in hub_upgrade:
                 color, fill_color, radius = '#7c3aed', '#a78bfa', 9   # Tím
-                node_type = 'Hub Nâng cấp'
+                node_type = 'Upgraded Hub'
             elif nid in hub_existing:
                 color, fill_color, radius = '#ea580c', '#f97316', 7   # Cam
-                node_type = 'Hub Hiện có'
+                node_type = 'Existing Hub'
             else:
                 color, fill_color, radius = '#3b82f6', '#60a5fa', 5   # Xanh dương
-                node_type = 'Node thường'
+                node_type = 'Regular Node'
             
             folium.CircleMarker(
                 location=[lat, lon],

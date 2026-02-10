@@ -1,6 +1,6 @@
 """
 CELL 4 & CELL 5: TÍNH L_min VÀ NEAR-OPTIMAL PATHS CHO TỪNG O-D
-Module này tính toán paths và lưu vào pkl sau khi hoàn tất CELL 5
+This module computes paths and saves to pkl after completing CELL 5
 """
 
 from collections import defaultdict
@@ -102,19 +102,19 @@ def dijkstra_multi_target(G_adj, targets):
 
 
 def origin_states(o):
-    # origin có thể là node thật "o" hoặc trạng thái (o,1)/(o,2)
+    # origin can be physical node "o" or state (o,1)/(o,2)
     return [o, (o, 1), (o, 2)]
 
 
 def dest_targets(d):
-    # destination có thể đến trực tiếp node d hoặc các trạng thái (d,1)/(d,2)
-    # (d,0) trong code mẫu của bạn thực ra "d" (node thật). Ta giữ cả d cho chắc.
+    # destination can reach node d hoặc các trạng thái (d,1)/(d,2)
+    # (d,0) in sample code is actually "d" (node thật). Keep both d.
     return [d, (d, 1), (d, 2)]
 
 
 def calculate_L_min(G_exp, OD_pairs):
     """
-    CELL 4: Tính L_min cho từng O-D pair
+    CELL 4: Compute L_min for each O-D pair
     """
     print("\n" + "="*80)
     print("CELL 4: TÍNH L_min CHO TỪNG O-D")
@@ -143,11 +143,11 @@ def calculate_L_min(G_exp, OD_pairs):
             if math.isinf(L_min):
                 inf_count += 1
 
-    print(f" Đã tính L_min cho {len(Lmin_dict)} cặp O-D | unreachable = {inf_count}/{total_count}")
+    print(f" Computed L_min for {len(Lmin_dict)} O-D pairs | unreachable = {inf_count}/{total_count}")
 
-    # (optional) in thử vài kết quả
+    # (optional) print sample
     sample = list(Lmin_dict.items())[:10]
-    print("\nVí dụ 10 L_min đầu tiên:")
+    print("\nExample first 10 L_min:")
     for (comm, o, d), val in sample:
         print(f"  {comm}: {o} -> {d} | L_min = {val if not math.isinf(val) else 'INF'}")
     
@@ -173,7 +173,7 @@ def near_optimal_dfs(G, start_node, target_nodes, L_min, epsilon=0.2, max_paths=
             continue
 
         for neigh, w, edge_type in G.get(node, []):
-            if neigh in path:  # tránh vòng
+            if neigh in path:  # avoid cycle
                 continue
             new_cost = cost + float(w)
             if new_cost > cutoff:
@@ -215,7 +215,7 @@ def build_paths_from_near_optimal(near_optimal_paths):
                         f"[BUG] {comm} od={od} path{i} has start={s}, end={e}"
                     )
 
-            paths[(comm, od)] = expanded  # mỗi OD có list riêng
+            paths[(comm, od)] = expanded  # each OD has own list
     return paths
 
 
@@ -233,8 +233,8 @@ def generate_all_unique_paths_with_through_hubs(paths_list, H):
     """
     Input:
         paths_list : list of paths
-            mỗi path là list các arc [(u,v), ...]
-        H : list hubs (ví dụ [3,4,6])
+            each path is list of arcs [(u,v), ...]
+        H : list hubs (e.g. [3,4,6])
 
     Output:
         unique_paths : list of unique paths (list of arcs)
@@ -244,8 +244,8 @@ def generate_all_unique_paths_with_through_hubs(paths_list, H):
     for base_path in paths_list:
         n = len(base_path)
 
-        # --- tìm các block hub có thể through ---
-        blocks = []  # mỗi block: {start, through_arc}
+        # --- find through-hub blocks ---
+        blocks = []  # each block: {start, through_arc}
         for i in range(n - 2):
             (u1, v1) = base_path[i]
             (u2, v2) = base_path[i + 1]
@@ -275,12 +275,12 @@ def generate_all_unique_paths_with_through_hubs(paths_list, H):
                 "through_arc": (v1, v3)  # (h^m -> next^m)
             })
 
-        # nếu không có hub nào thì giữ nguyên
+        # if no hubs, keep as-is
         if not blocks:
             all_generated.append(base_path)
             continue
 
-        # --- sinh tất cả combination không chồng block ---
+        # --- generate non-overlapping block combos ---
         for mask in itertools.product([0, 1], repeat=len(blocks)):
             chosen = [blocks[j] for j, b in enumerate(mask) if b == 1]
 
@@ -326,7 +326,7 @@ def generate_all_unique_paths_with_through_hubs(paths_list, H):
 
 def calculate_near_optimal_paths(G_exp, OD_pairs, Lmin_dict, H, EPSILON=0.2, MAX_PATHS_PER_OD=5000):
     """
-    CELL 5: Tính near-optimal paths cho từng O-D pair
+    CELL 5: Compute near-optimal paths for each O-D pair
     """
     print("\n" + "="*80)
     print("CELL 5: TÍNH NEAR-OPTIMAL PATHS CHO TỪNG O-D")
@@ -345,11 +345,11 @@ def calculate_near_optimal_paths(G_exp, OD_pairs, Lmin_dict, H, EPSILON=0.2, MAX
                 unreachable += 1
                 continue
 
-            # start/end đều là node thật
+            # start/end are physical nodes
             start_node = o
             target_nodes = {d}
 
-            # nếu origin không có outgoing trong expanded graph thì bỏ
+            # if origin has no outgoing trong expanded graph thì bỏ
             if start_node not in G_exp:
                 near_optimal_paths[comm][(o, d)] = []
                 continue
@@ -359,7 +359,7 @@ def calculate_near_optimal_paths(G_exp, OD_pairs, Lmin_dict, H, EPSILON=0.2, MAX
                 epsilon=EPSILON, max_paths=MAX_PATHS_PER_OD
             )
 
-            # loại trùng
+            # deduplicate
             seen = set()
             unique_paths = []
             for path, cost in sorted(paths, key=lambda x: x[1]):
@@ -374,10 +374,10 @@ def calculate_near_optimal_paths(G_exp, OD_pairs, Lmin_dict, H, EPSILON=0.2, MAX
             near_optimal_paths[comm][(o, d)] = unique_paths
             total_paths += len(unique_paths)
 
-    print(f"Hoàn tất! Tìm được {total_paths} near-optimal paths (ε={EPSILON})")
+    print(f"Complete! Found {total_paths} near-optimal paths (ε={EPSILON})")
     print(f"   - Unreachable OD (L_min=INF): {unreachable}")
 
-    # Build paths từ near_optimal_paths
+    # Build paths from near_optimal_paths
     paths = build_paths_from_near_optimal(near_optimal_paths)
 
     print("Number of paths for g1,(0,14):", len(paths.get(('g1',(0,14)), [])))
@@ -398,11 +398,11 @@ def calculate_near_optimal_paths(G_exp, OD_pairs, Lmin_dict, H, EPSILON=0.2, MAX
 
 
 # ============================================================
-# LƯU VÀ ĐỌC PKL SAU CELL 5
+# SAVE AND LOAD PKL AFTER CELL 5
 # ============================================================
 def save_paths_to_pkl(paths, Lmin_dict, node_names, node_projects, edges_raw, 
                       pkl_file="data/paths_data.pkl"):
-    """Lưu paths và các dữ liệu liên quan vào file pkl sau CELL 5"""
+    """Save paths and related data vào file pkl sau CELL 5"""
     pkl_path = Path(pkl_file)
     pkl_path.parent.mkdir(parents=True, exist_ok=True)
     
@@ -417,21 +417,21 @@ def save_paths_to_pkl(paths, Lmin_dict, node_names, node_projects, edges_raw,
     with open(pkl_path, 'wb') as f:
         pickle.dump(data_dict, f)
     
-    print(f"\n✓ Đã lưu paths vào: {pkl_path}")
+    print(f"\n✓ Saved paths to: {pkl_path}")
     return pkl_path
 
 
 def load_paths_from_pkl(pkl_file="data/paths_data.pkl"):
-    """Đọc paths từ file pkl"""
+    """Read paths from pkl file"""
     pkl_path = Path(pkl_file)
     
     if not pkl_path.exists():
-        raise FileNotFoundError(f"File pkl không tồn tại: {pkl_path}")
+        raise FileNotFoundError(f"Pkl file not found: {pkl_path}")
     
     with open(pkl_path, 'rb') as f:
         data_dict = pickle.load(f)
     
-    print(f"\n✓ Đã đọc paths từ: {pkl_path}")
+    print(f"\n✓ Read paths from: {pkl_path}")
     return data_dict
 
 
@@ -441,19 +441,19 @@ def load_paths_from_pkl(pkl_file="data/paths_data.pkl"):
 def calculate_all_paths(G_exp, OD_pairs, H, node_names, node_projects, edges_raw,
                         EPSILON=0.5, MAX_PATHS_PER_OD=5000, save_pkl=True):
     """
-    Tính toán tất cả paths (CELL 4 + CELL 5) và lưu vào pkl
+    Compute all paths (CELL 4 + CELL 5) and save to pkl
     
     Returns:
         paths: Dictionary of paths
         Lmin_dict: Dictionary of L_min values
     """
-    # CELL 4: Tính L_min
+    # CELL 4: Compute L_min
     Lmin_dict = calculate_L_min(G_exp, OD_pairs)
     
     # CELL 5: Tính near-optimal paths
     paths = calculate_near_optimal_paths(G_exp, OD_pairs, Lmin_dict, H, EPSILON, MAX_PATHS_PER_OD)
     
-    # Lưu vào pkl sau CELL 5
+    # Save to pkl sau CELL 5
     if save_pkl:
         save_paths_to_pkl(paths, Lmin_dict, node_names, node_projects, edges_raw)
     

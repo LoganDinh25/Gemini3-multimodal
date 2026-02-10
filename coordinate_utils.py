@@ -1,6 +1,6 @@
 """
 Coordinate Utilities - VN-2000 to WGS84 Conversion
-Chuyển đổi tọa độ VN-2000 (EPSG:3405) sang WGS84 cho bản đồ thực tế
+Chuyển đổi tọa độ VN-2000 (EPSG:3405) sang WGS84 cho actual map
 """
 
 import numpy as np

@@ -1,6 +1,6 @@
 """
-CELL 2: LOAD DỮ LIỆU TỪ FILE CSV - CẬP NHẬT MỚI
-Module này load dữ liệu từ CSV và lưu vào pkl để tái sử dụng
+CELL 2: LOAD DATA FROM CSV FILES - UPDATE
+Module này load data from CSV and save to pkl để tái sử dụng
 """
 
 import csv
@@ -20,7 +20,7 @@ def _split_semicolon(s: str):
     s = str(s).strip()
     if not s:
         return []
-    parts = re.split(r"[;]", s)   # phân cách bằng ';'
+    parts = re.split(r"[;]", s)   # delimiter: ';'
     return [p.strip() for p in parts if p.strip()]
 
 def _to_float(cell, default=0.0):
@@ -69,30 +69,30 @@ def _parse_destinations(cell: str):
 
 
 # ============================================================
-# 2.1 LOAD ARCS - CẬP NHẬT THEO YÊU CẦU MỚI
+# 2.1 LOAD ARCS - UPDATE
 # ============================================================
 def load_arcs(arc_file):
     """
-    Arc file columns cập nhật:
+    Arc file columns columns:
     FromNode, ToNode, Type, Length(m), Project(P/E),
     Investment_Cost (Billion VND), Construction_Time (Years),
     Capacity(tons/year), Capacity_After_Investment (tons/year),
-    base_costs  # THÊM CỘT NÀY
+    base_costs  # ADD
     
     Rules:
     - Type: R => road (mode=1), W => waterway (mode=2)
     - Project(P/E):
         P: upgrade project
         E: existing arc
-    - base_costs: chi phí vận tải gốc
+    - base_costs: base transport cost
     """
     edges = []
-    print(f"\n[1] Đang load arcs từ: {arc_file}")
+    print(f"\n[1] Loading arcs from: {arc_file}")
 
     try:
         with open(arc_file, newline='', encoding='utf-8', errors="ignore") as f:
             reader = csv.DictReader(f)
-            print(f"   - Các trường trong file: {reader.fieldnames}")
+            print(f"   - Fields in file: {reader.fieldnames}")
 
             for row_num, row in enumerate(reader, 1):
                 try:
@@ -154,10 +154,10 @@ def load_arcs(arc_file):
                     })
 
                 except Exception as e:
-                    print(f"   ⚠️ Lỗi dòng {row_num}: {e}")
+                    print(f"   ⚠️ Row error {row_num}: {e}")
                     continue
 
-        print(f"   ✓ Đã load {len(edges)} arcs thành công")
+        print(f"   ✓ Loaded {len(edges)} arcs successfully")
 
         # quick summary
         road = sum(1 for a in edges if a["mode"] == 1)
@@ -170,15 +170,15 @@ def load_arcs(arc_file):
         print(f"     - Total investment (bil VND): {total_inv:,.2f}")
 
     except FileNotFoundError:
-        print(f"   ✗ Không tìm thấy file: {arc_file}")
+        print(f"   ✗ File not found: {arc_file}")
     except Exception as e:
-        print(f"   ✗ Lỗi khi load file: {e}")
+        print(f"   ✗ Error loading file: {e}")
 
     return edges
 
 
 # ============================================================
-# 2.2 LOAD NODES - CẬP NHẬT THEO YÊU CẦU MỚI
+# 2.2 LOAD NODES - UPDATE
 # ============================================================
 def load_nodes(node_file):
     """
@@ -204,12 +204,12 @@ def load_nodes(node_file):
     candidate_hubs_upgrade = []
     normal_nodes = []
 
-    print(f"\n[2] Đang load nodes từ: {node_file}")
+    print(f"\n[2] Loading nodes from: {node_file}")
 
     try:
         with open(node_file, newline='', encoding='utf-8', errors="ignore") as f:
             reader = csv.DictReader(f)
-            print(f"   - Các trường trong file: {reader.fieldnames}")
+            print(f"   - Fields in file: {reader.fieldnames}")
 
             for row_num, row in enumerate(reader, 1):
                 try:
@@ -276,17 +276,17 @@ def load_nodes(node_file):
                             OD_pairs[comm].append((nid, d))
 
                 except Exception as e:
-                    print(f"   ⚠️ Lỗi dòng {row_num}: {e}")
+                    print(f"   ⚠️ Row error {row_num}: {e}")
                     continue
 
-        print(f"   ✓ Đã load {len(node_names)} nodes thành công")
+        print(f"   ✓ Loaded {len(node_names)} nodes successfully")
         print(f"     - Normal: {len(normal_nodes)} | Existing hubs(E): {len(existing_hubs)} | "
               f"New candidates: {len(candidate_hubs_new)} | Upgrade candidates: {len(candidate_hubs_upgrade)}")
 
     except FileNotFoundError:
-        print(f"   ✗ Không tìm thấy file: {node_file}")
+        print(f"   ✗ File not found: {node_file}")
     except Exception as e:
-        print(f"   ✗ Lỗi khi load file: {e}")
+        print(f"   ✗ Error loading file: {e}")
 
     return {
         "OD_pairs": OD_pairs,
@@ -402,7 +402,7 @@ def load_data_from_pkl(pkl_file="data/preprocessed_data.pkl"):
 if __name__ == "__main__":
     # Test load và save
     print("\n" + "="*80)
-    print("CELL 2: LOAD DỮ LIỆU TỪ FILE CSV - CẬP NHẬT MỚI")
+    print("CELL 2: LOAD DATA FROM CSV FILES - UPDATE")
     print("="*80)
     
     arc_file = 'data/Mekong/arcs_remapped.csv'
@@ -421,7 +421,7 @@ if __name__ == "__main__":
      potential_arcs_cap_0, potential_arcs_cap_up, existing_arcs_cap,
      real_arc_upgrade_costs) = result
     
-    # Lưu vào pkl
+    # Save to pkl
     data_dict = {
         'edges_raw': edges_raw,
         'OD_pairs': OD_pairs,

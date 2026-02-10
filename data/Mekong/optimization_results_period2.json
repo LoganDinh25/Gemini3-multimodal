@@ -1,16 +1,40 @@
 {
   "region": "Mekong",
   "period": 2,
-  "total_cost": 2767739898.9898996,
-  "total_time": 1642386.3636363635,
-  "num_hubs": 0,
-  "selected_hubs": [],
+  "total_cost": 560555555.5555514,
+  "total_time": 329969.696969697,
+  "num_hubs": 23,
+  "selected_hubs": [
+    7,
+    11,
+    15,
+    16,
+    17,
+    18,
+    19,
+    21,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    32,
+    33,
+    6,
+    10,
+    12,
+    13,
+    14
+  ],
   "efficiency": 0.85,
   "solver_status": "optimal",
-  "solve_time": 0.11197018623352051,
+  "solve_time": 1.9288148880004883,
   "num_routes": 20,
   "total_routes_found": 37,
-  "total_demand": 300000.0000000001,
+  "total_demand": 59999.99999999995,
   "top_routes": [
     {
       "route_id": 1,
@@ -23,15 +47,15 @@
       ],
       "commodity": "Passenger",
       "mode": "multi-modal",
-      "cost": 35000000.0,
+      "cost": 7000000.0,
       "time": 28.0,
-      "flow": 12500.0,
+      "flow": 2500.0,
       "flow_ratio": 1.0,
       "od_pair": [
         0,
         14
       ],
-      "demand_od": 12500.0,
+      "demand_od": 2500.0,
       "path_labels": [
         "HCM City",
         "",
@@ -51,26 +75,28 @@
         46,
         48,
         51,
-        14,
+        52,
+        55,
         15
       ],
       "commodity": "Passenger",
-      "mode": "multi-modal",
-      "cost": 42500000.0,
-      "time": 34.0,
-      "flow": 12500.0,
+      "mode": "road",
+      "cost": 11000000.0,
+      "time": 44.0,
+      "flow": 2500.0,
       "flow_ratio": 1.0,
       "od_pair": [
         0,
         15
       ],
-      "demand_od": 12500.0,
+      "demand_od": 2500.0,
       "path_labels": [
         "HCM City",
         "",
         "",
         "",
-        "Kho Cảng Cần thơ",
+        "",
+        "",
         "Kho Cảng Trung tâm vùng C_n th_"
       ],
       "origin": 0,
@@ -92,15 +118,15 @@
       ],
       "commodity": "Passenger",
       "mode": "multi-modal",
-      "cost": 38750000.0,
+      "cost": 7750000.0,
       "time": 31.0,
-      "flow": 12500.0,
+      "flow": 2500.0,
       "flow_ratio": 1.0,
       "od_pair": [
         21,
         0
       ],
-      "demand_od": 12500.0,
+      "demand_od": 2500.0,
       "path_labels": [
         "Cửa Khẩu Hà Tiên - Hub Hà Tiên",
         "Cảng Bình Trị",
@@ -128,15 +154,15 @@
       ],
       "commodity": "Passenger",
       "mode": "road",
-      "cost": 45000000.0,
+      "cost": 9000000.0,
       "time": 36.0,
-      "flow": 12500.0,
+      "flow": 2500.0,
       "flow_ratio": 1.0,
       "od_pair": [
         21,
         30
       ],
-      "demand_od": 12500.0,
+      "demand_od": 2500.0,
       "path_labels": [
         "Cửa Khẩu Hà Tiên - Hub Hà Tiên",
         "",
@@ -162,15 +188,15 @@
       ],
       "commodity": "Passenger",
       "mode": "multi-modal",
-      "cost": 38750000.0,
-      "time": 31.0,
-      "flow": 12500.0,
+      "cost": 8500000.0,
+      "time": 34.0,
+      "flow": 2500.0,
       "flow_ratio": 1.0,
       "od_pair": [
         25,
         0
       ],
-      "demand_od": 12500.0,
+      "demand_od": 2500.0,
       "path_labels": [
         "Kho Cảng Rạch Giá Kiên giang",
         "Cảng Hub Mỹ Thanh - An giang Mỹ thới",
@@ -193,15 +219,15 @@
       ],
       "commodity": "Passenger",
       "mode": "multi-modal",
-      "cost": 11250000.0,
+      "cost": 2250000.0,
       "time": 9.0,
-      "flow": 12500.0,
+      "flow": 2500.0,
       "flow_ratio": 1.0,
       "od_pair": [
         25,
         30
       ],
-      "demand_od": 12500.0,
+      "demand_od": 2500.0,
       "path_labels": [
         "Kho Cảng Rạch Giá Kiên giang",
         "Kho lạnh Rạch giá - Hub Cảng Tắc cậu",
@@ -221,15 +247,15 @@
       ],
       "commodity": "Rice",
       "mode": "water",
-      "cost": 2500000.0,
+      "cost": 499999.99999999994,
       "time": 3.0,
-      "flow": 8333.333333333334,
+      "flow": 1666.6666666666665,
       "flow_ratio": 1.0,
       "od_pair": [
         6,
         0
       ],
-      "demand_od": 8333.333333333334,
+      "demand_od": 1666.6666666666665,
       "path_labels": [
         "Cảng Mỹ Thới Tiền Giang",
         "Cảng Nhơn Đức",
@@ -245,24 +271,26 @@
       "path": [
         10,
         51,
-        14,
+        52,
+        55,
         15
       ],
       "commodity": "Rice",
-      "mode": "multi-modal",
-      "cost": 15000000.000000002,
-      "time": 18.0,
-      "flow": 8333.333333333334,
+      "mode": "road",
+      "cost": 4666666.666666666,
+      "time": 28.0,
+      "flow": 1666.6666666666665,
       "flow_ratio": 1.0,
       "od_pair": [
         10,
         15
       ],
-      "demand_od": 8333.333333333334,
+      "demand_od": 1666.6666666666665,
       "path_labels": [
         "Hub Cảng Cao Lãnh - Cảng Sa Đéc",
         "",
-        "Kho Cảng Cần thơ",
+        "",
+        "",
         "Kho Cảng Trung tâm vùng C_n th_"
       ],
       "origin": 10,
@@ -275,24 +303,24 @@
       "path": [
         11,
         13,
-        14,
+        37,
         15
       ],
       "commodity": "Rice",
       "mode": "road",
-      "cost": 10833333.333333334,
+      "cost": 2166666.6666666665,
       "time": 13.0,
-      "flow": 8333.333333333334,
+      "flow": 1666.6666666666665,
       "flow_ratio": 1.0,
       "od_pair": [
         11,
         15
       ],
-      "demand_od": 8333.333333333334,
+      "demand_od": 1666.6666666666665,
       "path_labels": [
         "Hub Cao Lãnh - Cảng Trần quốc toản",
         "Cảng Hub Mỹ Thanh - An giang Mỹ thới",
-        "Kho Cảng Cần thơ",
+        "Cảng Bình Minh",
         "Kho Cảng Trung tâm vùng C_n th_"
       ],
       "origin": 11,
@@ -312,15 +340,15 @@
       ],
       "commodity": "Rice",
       "mode": "multi-modal",
-      "cost": 15833333.333333334,
+      "cost": 3166666.6666666665,
       "time": 19.0,
-      "flow": 8333.333333333334,
+      "flow": 1666.6666666666665,
       "flow_ratio": 1.0,
       "od_pair": [
         12,
         0
       ],
-      "demand_od": 8333.333333333334,
+      "demand_od": 1666.6666666666665,
       "path_labels": [
         "Cảng Vĩnh Xương - Tân Châu",
         "Cảng Hồng Ngự",
@@ -345,15 +373,15 @@
       ],
       "commodity": "Rice",
       "mode": "road",
-      "cost": 23333333.333333336,
+      "cost": 4666666.666666666,
       "time": 28.0,
-      "flow": 8333.333333333334,
+      "flow": 1666.6666666666665,
       "flow_ratio": 1.0,
       "od_pair": [
         13,
         0
       ],
-      "demand_od": 8333.333333333334,
+      "demand_od": 1666.6666666666665,
       "path_labels": [
         "Cảng Hub Mỹ Thanh - An giang Mỹ thới",
         "",
@@ -377,15 +405,15 @@
       ],
       "commodity": "Rice",
       "mode": "multi-modal",
-      "cost": 23333333.333333336,
+      "cost": 4666666.666666666,
       "time": 28.0,
-      "flow": 8333.333333333334,
+      "flow": 1666.6666666666665,
       "flow_ratio": 1.0,
       "od_pair": [
         14,
         0
       ],
-      "demand_od": 8333.333333333334,
+      "demand_od": 1666.6666666666665,
       "path_labels": [
         "Kho Cảng Cần thơ",
         "",
@@ -409,15 +437,15 @@
       ],
       "commodity": "Rice",
       "mode": "road",
-      "cost": 23333333.333333336,
+      "cost": 4666666.666666666,
       "time": 28.0,
-      "flow": 8333.333333333334,
+      "flow": 1666.6666666666665,
       "flow_ratio": 1.0,
       "od_pair": [
         16,
         0
       ],
-      "demand_od": 8333.333333333334,
+      "demand_od": 1666.6666666666665,
       "path_labels": [
         "Cảng Đại Ngải",
         "",
@@ -443,15 +471,15 @@
       ],
       "commodity": "Rice",
       "mode": "multi-modal",
-      "cost": 23333333.333333336,
-      "time": 28.0,
-      "flow": 8333.333333333334,
+      "cost": 5000000.0,
+      "time": 30.0,
+      "flow": 1666.6666666666665,
       "flow_ratio": 1.0,
       "od_pair": [
         19,
         0
       ],
-      "demand_od": 8333.333333333334,
+      "demand_od": 1666.6666666666665,
       "path_labels": [
         "Cửa Khẩu Tinh Biên - Kho cửa khẩu An giang",
         "",
@@ -480,15 +508,15 @@
       ],
       "commodity": "Rice",
       "mode": "road",
-      "cost": 43333333.333333336,
+      "cost": 8666666.666666666,
       "time": 52.0,
-      "flow": 8333.333333333334,
+      "flow": 1666.6666666666665,
       "flow_ratio": 1.0,
       "od_pair": [
         27,
         0
       ],
-      "demand_od": 8333.333333333334,
+      "demand_od": 1666.6666666666665,
       "path_labels": [
         "Hub Vĩ Thanh",
         "",
@@ -515,15 +543,15 @@
       ],
       "commodity": "Fisheries",
       "mode": "road",
-      "cost": 11590909.09090909,
+      "cost": 2318181.8181818184,
       "time": 17.0,
-      "flow": 6818.181818181818,
+      "flow": 1363.6363636363637,
       "flow_ratio": 1.0,
       "od_pair": [
         12,
         15
       ],
-      "demand_od": 6818.181818181818,
+      "demand_od": 1363.6363636363637,
       "path_labels": [
         "Cảng Vĩnh Xương - Tân Châu",
         "Cảng Bình Long",
@@ -549,15 +577,15 @@
       ],
       "commodity": "Fisheries",
       "mode": "road",
-      "cost": 30000000.0,
+      "cost": 6000000.0,
       "time": 44.0,
-      "flow": 6818.181818181818,
+      "flow": 1363.6363636363637,
       "flow_ratio": 1.0,
       "od_pair": [
         19,
         15
       ],
-      "demand_od": 6818.181818181818,
+      "demand_od": 1363.6363636363637,
       "path_labels": [
         "Cửa Khẩu Tinh Biên - Kho cửa khẩu An giang",
         "",
@@ -583,15 +611,15 @@
       ],
       "commodity": "Fisheries",
       "mode": "multi-modal",
-      "cost": 17727272.727272727,
+      "cost": 3545454.545454546,
       "time": 26.0,
-      "flow": 6818.181818181818,
+      "flow": 1363.6363636363637,
       "flow_ratio": 1.0,
       "od_pair": [
         20,
         15
       ],
-      "demand_od": 6818.181818181818,
+      "demand_od": 1363.6363636363637,
       "path_labels": [
         "Cửa khẩu Giang Thanh",
         "",
@@ -618,15 +646,15 @@
       ],
       "commodity": "Fisheries",
       "mode": "multi-modal",
-      "cost": 21136363.636363637,
+      "cost": 4227272.7272727275,
       "time": 31.0,
-      "flow": 6818.181818181818,
+      "flow": 1363.6363636363637,
       "flow_ratio": 1.0,
       "od_pair": [
         21,
         0
       ],
-      "demand_od": 6818.181818181818,
+      "demand_od": 1363.6363636363637,
       "path_labels": [
         "Cửa Khẩu Hà Tiên - Hub Hà Tiên",
         "Cảng Bình Trị",
@@ -653,15 +681,15 @@
       ],
       "commodity": "Fisheries",
       "mode": "multi-modal",
-      "cost": 17727272.727272727,
+      "cost": 3545454.545454546,
       "time": 26.0,
-      "flow": 6818.181818181818,
+      "flow": 1363.6363636363637,
       "flow_ratio": 1.0,
       "od_pair": [
         21,
         15
       ],
-      "demand_od": 6818.181818181818,
+      "demand_od": 1363.6363636363637,
       "path_labels": [
         "Cửa Khẩu Hà Tiên - Hub Hà Tiên",
         "",
@@ -675,24 +703,443 @@
       "destination_name": "Kho Cảng Trung tâm vùng C_n th_"
     }
   ],
-  "hub_utilization": {},
+  "hub_utilization": {
+    "7": 0.0027272727272727275,
+    "11": 0.011515151515151516,
+    "15": 0.022575757575757575,
+    "16": 0.00016666666666666666,
+    "17": 0.0027272727272727275,
+    "18": 0.005454545454545455,
+    "19": 0.00606060606060606,
+    "21": 0.018181818181818184,
+    "23": 0.0,
+    "24": 0.0027272727272727275,
+    "25": 0.015454545454545455,
+    "26": 0.0003863636363636364,
+    "27": 0.008787878787878787,
+    "28": 0.0027272727272727275,
+    "29": 0.0027272727272727275,
+    "30": 0.018181818181818184,
+    "32": 0.0027272727272727275,
+    "33": 0.0,
+    "6": 0.0008863636363636362,
+    "10": 0.00018939393939393937,
+    "12": 0.00018939393939393937,
+    "13": 0.0012651515151515151,
+    "14": 0.0006893939393939394
+  },
   "modal_split": {
-    "road": 0.32304526748971185,
-    "water": 0.04526748971193415,
-    "multi-modal": 0.6316872427983538
+    "road": 0.43621399176954734,
+    "water": 0.045267489711934145,
+    "multi-modal": 0.5185185185185186
   },
   "cost_breakdown": {
-    "transportation": 822310606.0606059,
-    "hub_service": 820075757.5757576,
-    "mode_switching": 32803030.3030303,
-    "hub_upgrade": 0.0,
+    "transportation": 170121212.12121212,
+    "hub_service": 159848484.84848487,
+    "mode_switching": 14318181.818181816,
+    "hub_upgrade": 4300000000.0,
     "arc_upgrade": 0.0
   },
-  "hub_levels": {},
-  "arc_upgrades": [],
+  "hub_levels": {
+    "7": {
+      "hub": 7,
+      "period": 2,
+      "level": 1,
+      "capacity": 500000.0
+    },
+    "11": {
+      "hub": 11,
+      "period": 2,
+      "level": 1,
+      "capacity": 500000.0
+    },
+    "15": {
+      "hub": 15,
+      "period": 2,
+      "level": 1,
+      "capacity": 500000.0
+    },
+    "16": {
+      "hub": 16,
+      "period": 2,
+      "level": 2,
+      "capacity": 10000000.0
+    },
+    "17": {
+      "hub": 17,
+      "period": 2,
+      "level": 1,
+      "capacity": 500000.0
+    },
+    "18": {
+      "hub": 18,
+      "period": 2,
+      "level": 1,
+      "capacity": 500000.0
+    },
+    "19": {
+      "hub": 19,
+      "period": 2,
+      "level": 1,
+      "capacity": 500000.0
+    },
+    "21": {
+      "hub": 21,
+      "period": 2,
+      "level": 1,
+      "capacity": 500000.0
+    },
+    "23": {
+      "hub": 23,
+      "period": 2,
+      "level": 1,
+      "capacity": 500000.0
+    },
+    "24": {
+      "hub": 24,
+      "period": 2,
+      "level": 1,
+      "capacity": 500000.0
+    },
+    "25": {
+      "hub": 25,
+      "period": 2,
+      "level": 1,
+      "capacity": 500000.0
+    },
+    "26": {
+      "hub": 26,
+      "period": 2,
+      "level": 2,
+      "capacity": 10000000.0
+    },
+    "27": {
+      "hub": 27,
+      "period": 2,
+      "level": 1,
+      "capacity": 500000.0
+    },
+    "28": {
+      "hub": 28,
+      "period": 2,
+      "level": 1,
+      "capacity": 500000.0
+    },
+    "29": {
+      "hub": 29,
+      "period": 2,
+      "level": 1,
+      "capacity": 500000.0
+    },
+    "30": {
+      "hub": 30,
+      "period": 2,
+      "level": 1,
+      "capacity": 500000.0
+    },
+    "32": {
+      "hub": 32,
+      "period": 2,
+      "level": 1,
+      "capacity": 500000.0
+    },
+    "33": {
+      "hub": 33,
+      "period": 2,
+      "level": 1,
+      "capacity": 500000.0
+    },
+    "6": {
+      "hub": 6,
+      "period": 2,
+      "level": 1,
+      "capacity": 10000000.0
+    },
+    "10": {
+      "hub": 10,
+      "period": 2,
+      "level": 2,
+      "capacity": 16000000.0
+    },
+    "12": {
+      "hub": 12,
+      "period": 2,
+      "level": 2,
+      "capacity": 16000000.0
+    },
+    "13": {
+      "hub": 13,
+      "period": 2,
+      "level": 1,
+      "capacity": 10000000.0
+    },
+    "14": {
+      "hub": 14,
+      "period": 2,
+      "level": 1,
+      "capacity": 10000000.0
+    }
+  },
+  "arc_upgrades": [
+    {
+      "from": 14,
+      "to": 51,
+      "mode": "waterway",
+      "period": 2
+    },
+    {
+      "from": 15,
+      "to": 37,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 19,
+      "to": 44,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 2,
+      "to": 1,
+      "mode": "waterway",
+      "period": 2
+    },
+    {
+      "from": 25,
+      "to": 26,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 25,
+      "to": 65,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 30,
+      "to": 71,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 31,
+      "to": 30,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 37,
+      "to": 52,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 39,
+      "to": 5,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 44,
+      "to": 53,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 46,
+      "to": 0,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 48,
+      "to": 46,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 51,
+      "to": 9,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 52,
+      "to": 51,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 53,
+      "to": 39,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 54,
+      "to": 13,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 55,
+      "to": 15,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 55,
+      "to": 37,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 56,
+      "to": 55,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 57,
+      "to": 56,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 58,
+      "to": 8,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 59,
+      "to": 75,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 6,
+      "to": 7,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 61,
+      "to": 58,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 63,
+      "to": 16,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 63,
+      "to": 73,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 64,
+      "to": 63,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 65,
+      "to": 66,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 65,
+      "to": 69,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 66,
+      "to": 54,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 69,
+      "to": 13,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 7,
+      "to": 6,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 70,
+      "to": 27,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 70,
+      "to": 57,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 71,
+      "to": 70,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 75,
+      "to": 0,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 8,
+      "to": 2,
+      "mode": "waterway",
+      "period": 2
+    },
+    {
+      "from": 2,
+      "to": 1,
+      "mode": "waterway",
+      "period": 2
+    },
+    {
+      "from": 31,
+      "to": 30,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 37,
+      "to": 52,
+      "mode": "road",
+      "period": 2
+    },
+    {
+      "from": 8,
+      "to": 2,
+      "mode": "waterway",
+      "period": 2
+    }
+  ],
   "insights": {
-    "strategy": "Multi-modal hub-and-spoke with 0 hubs selected",
-    "key_findings": []
+    "strategy": "Multi-modal hub-and-spoke with 23 hubs selected",
+    "key_findings": [
+      "23 hubs selected: [7, 11, 15, 16, 17, 18, 19, 21, 23, 24, 25, 26, 27, 28, 29, 30, 32, 33, 6, 10, 12, 13, 14]",
+      "42 arcs upgraded in period 2"
+    ]
   },
   "node_names": {
     "0": "HCM City",
@@ -1078,5 +1525,5 @@
       1167395.309
     ]
   },
-  "export_timestamp": "2026-02-09T23:25:36.554254"
+  "export_timestamp": "2026-02-10T00:39:06.916451"
 }

@@ -1,6 +1,6 @@
 """
-CELL 3: XÂY DỰNG ĐỒ THỊ MỞ RỘNG
-Module này xây dựng expanded graph từ dữ liệu đã load
+CELL 3: BUILD EXTENDED GRAPH
+This module builds expanded graph from loaded data
 """
 
 from collections import defaultdict
@@ -11,10 +11,10 @@ from collections import defaultdict
 # ============================================================
 def to_edge_tuple_list(edges_raw):
     """
-    Chuẩn hoá edges_raw về list tuple: (u, v, mode, length, project)
-    Hỗ trợ:
+    Normalize edges_raw to list of tuples: (u, v, mode, length, project)
+    Support:
       - dict: {"u","v","mode","length_m","project",...}
-      - tuple: (u,v,mode,length,project,...) hoặc (u,v,mode,length,project)
+      - tuple: (u,v,mode,length,project,...) or (u,v,mode,length,project)
     """
     out = []
     for e in edges_raw:
@@ -89,16 +89,16 @@ def build_arcs(G_exp):
 
     for u, out_list in G_exp.items():
         for item in out_list:
-            # item có thể là: (v, dist, arc_type)  hoặc (v, 0, 'virtual_arc')
+            # item can be: (v, dist, arc_type)  hoặc (v, 0, 'virtual_arc')
             v, _, arc_type = item
 
             if arc_type in ("road", "water"):
-                # cạnh thật: u phải là node thật (int), v thường là node ảo (tuple)
+                # real arc: u must be physical node (int), v usually virtual node (tuple)
                 if isinstance(u, int):
                     real_arcs.append((u, to_virtual_label(v)))
 
             elif arc_type == "virtual_arc":
-                # cạnh ảo: u thường là node ảo (tuple), v thường là node thật (int)
+                # virtual arc: u thường là node ảo (tuple), v usually physical node (int)
                 if isinstance(u, tuple) and isinstance(v, int):
                     virtual_arcs.append((to_virtual_label(u), v))
 
@@ -136,7 +136,7 @@ def add_reverse_arcs(A_tilde):
         else:
             raise ValueError(f"Unknown arc type: {(u, v)}")
 
-    # giữ thứ tự "đẹp": real->virtual trước, rồi virtual->virtual
+    # keep "clean" order: real->virtual trước, then virtual->virtual
     def arc_key(a):
         u, v = a
         typ = 0 if isinstance(u, int) else 1
@@ -153,7 +153,7 @@ def create_arc_structure(edges_raw, all_hubs_from_data):
     virtual_arcs = []
     through_hub_arc = []
     
-    # Tạo set của các hub để kiểm tra nhanh
+    # Set of hubs for quick lookup
     hubs_set = set(all_hubs_from_data)
     
     for edge in edges_raw:
@@ -161,22 +161,22 @@ def create_arc_structure(edges_raw, all_hubs_from_data):
         v = edge["v"]
         mode = edge["mode"]
         
-        # Tạo virtual node tương ứng
+        # Create corresponding virtual node
         v_virtual = f'{v}^{mode}'
         u_virtual = f'{u}^{mode}'
         
-        # Real arc: từ node thực đến virtual node
+        # Real arc: from physical to virtual node
         real_arcs.append((u, v_virtual))
         real_arcs.append((v, u_virtual))
         
-        # Virtual arc: từ virtual node trở lại node thực
+        # Virtual arc: from virtual back to physical node
         virtual_arcs.append((v_virtual, v))
         if (u_virtual, u) not in virtual_arcs:
             virtual_arcs.append((u_virtual, u))
         
-        # Tạo through-hub arcs nếu cả u và v đều là hub
+        # Create through-hub arcs if both u and v are hubs
         if u in hubs_set:
-            # Tạo through-hub arc cho mode này
+            # Create through-hub arc for this mode
             v_virtual = f'{v}^{mode}'
             through_hub_arc.append((u_virtual, v_virtual))
     
@@ -187,8 +187,8 @@ def create_arc_structure(edges_raw, all_hubs_from_data):
 # Classify arcs (potential vs existing)
 # ============================================================
 def classify_arcs(edges_raw, A, real_arcs, virtual_arcs, through_hub_arc):
-    """Phân loại arcs thành potential và existing"""
-    # Tạo mapping từ real arcs để xác định loại project
+    """Classify arcs as potential and existing"""
+    # Map real arcs để xác định loại project
     arc_project_type = {}
     for edge in edges_raw:
         u = edge["u"]
@@ -198,7 +198,7 @@ def classify_arcs(edges_raw, A, real_arcs, virtual_arcs, through_hub_arc):
         v_virtual = f'{v}^{mode}'
         arc_project_type[(u, v_virtual)] = project
 
-    # Phân loại potential và existing arcs
+    # Classify potential and existing arcs
     potential_arcs_list = []
     existing_arcs_list = []
 
@@ -209,18 +209,18 @@ def classify_arcs(edges_raw, A, real_arcs, virtual_arcs, through_hub_arc):
             else:
                 existing_arcs_list.append(arc)
         else:
-            # Các virtual arcs và through-hub arcs
-            # Kiểm tra nếu là virtual arc
+            # Virtual and through-hub arcs
+            # Check if virtual arc
             if arc in virtual_arcs:
                 existing_arcs_list.append(arc)
-            # Kiểm tra nếu là through-hub arc
+            # Check if through-hub arc
             elif arc in through_hub_arc:
-                # Tìm real arc tương ứng
+                # Find corresponding real arc
                 u_physical = int(arc[0].split('^')[0])
                 v_physical = int(arc[1].split('^')[0])
                 mode = int(arc[0].split('^')[1])
                 
-                # Tìm edge tương ứng
+                # Find corresponding edge
                 corresponding_edge = None
                 for edge in edges_raw:
                     if edge["u"] == u_physical and edge["v"] == v_physical and edge["mode"] == mode:
@@ -242,7 +242,7 @@ def classify_arcs(edges_raw, A, real_arcs, virtual_arcs, through_hub_arc):
 # ============================================================
 def build_graph_structure(edges_raw, H, N, OD_pairs):
     """
-    Build expanded graph và các arc structures
+    Build expanded graph and arc structures
     
     Returns:
         G_exp: Expanded graph
@@ -253,23 +253,23 @@ def build_graph_structure(edges_raw, H, N, OD_pairs):
         all_nodes: All nodes (real + virtual)
     """
     print("\n" + "="*80)
-    print("CELL 3: XÂY DỰNG ĐỒ THỊ MỞ RỘNG")
+    print("CELL 3: BUILD EXTENDED GRAPH")
     print("="*80)
     
-    # Tạo arcs từ dữ liệu CSV
-    print("\n[3] Tạo arcs từ dữ liệu CSV:")
+    # Create arcs from CSV data
+    print("\n[3] Create arcs from CSV data:")
     real_arcs, virtual_arcs, through_hub_arc = create_arc_structure(edges_raw, H)
     
-    # Tạo A (tất cả arcs)
+    # Create A (all arcs)
     A = real_arcs + virtual_arcs + through_hub_arc
     
     print(f"  • Real arcs: {len(real_arcs)} arcs")
     print(f"  • Virtual arcs: {len(virtual_arcs)} arcs")
     print(f"  • Through-hub arcs: {len(through_hub_arc)} arcs")
-    print(f"  • Tổng A: {len(A)} arcs")
+    print(f"  • Total A: {len(A)} arcs")
     
-    # Phân loại arcs (potential vs existing)
-    print("\n Phân loại arcs (potential vs existing):")
+    # Classify arcs (potential vs existing)
+    print("\n Classify arcs (potential vs existing):")
     potential_arcs_list, existing_arcs_list = classify_arcs(edges_raw, A, real_arcs, virtual_arcs, through_hub_arc)
     
     A_tilde = potential_arcs_list
