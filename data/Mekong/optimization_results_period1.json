@@ -33,7 +33,7 @@
   ],
   "efficiency": 0.85,
   "solver_status": "optimal",
-  "solve_time": 1.5775208473205566,
+  "solve_time": 1.6489789485931396,
   "num_routes": 20,
   "total_routes_found": 37,
   "total_demand": 40000.0,
@@ -3389,5 +3389,5 @@
       1167395.309
     ]
   },
-  "export_timestamp": "2026-02-10T00:56:04.913274"
+  "export_timestamp": "2026-02-10T02:54:36.694488"
 }

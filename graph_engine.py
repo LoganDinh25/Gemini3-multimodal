@@ -820,24 +820,15 @@ class GraphEngine:
         center_lat = float(center_lat)
         center_lon = float(center_lon)
 
-        # Online map: CartoDB Positron loads reliably on Streamlit Cloud (OSM tiles often blocked)
+        # Online map: Stadia Maps (OSM-based), ít bị rate-limit trên Streamlit Cloud
         if use_osm_tiles:
-            try:
-                m = folium.Map(
-                    location=[center_lat, center_lon],
-                    zoom_start=zoom_start,
-                    tiles='cartodb positron',
-                    control_scale=True,
-                    attr='© OpenStreetMap © CartoDB'
-                )
-            except Exception:
-                m = folium.Map(
-                    location=[center_lat, center_lon],
-                    zoom_start=zoom_start,
-                    tiles='https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-                    attr='© OpenStreetMap © CartoDB',
-                    control_scale=True
-                )
+            m = folium.Map(
+                location=[center_lat, center_lon],
+                zoom_start=zoom_start,
+                tiles='https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}.png',
+                attr='© Stadia Maps © OpenStreetMap',
+                control_scale=True
+            )
         else:
             m = folium.Map(
                 location=[center_lat, center_lon],

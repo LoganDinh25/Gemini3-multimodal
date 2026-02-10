@@ -441,7 +441,7 @@ with tab_scenario:
             <div class="card-subheader" style="margin-bottom: 0;">Hubs & routes · Waterway (blue) · Roadway (gray)</div>
         </div>
         """, unsafe_allow_html=True)
-        use_osm_tiles = st.checkbox("Show map (online)", value=True, key="use_osm", help="CartoDB base map — loads on Streamlit Cloud")
+        use_osm_tiles = st.checkbox("Show map (online)", value=True, key="use_osm", help="Stadia Maps (OSM) — ít bị rate-limit")
         animation_on_map = False
         nodes_df = graph_data.get('nodes')
         edges_df = graph_data.get('edges')
@@ -675,7 +675,7 @@ with tab_network:
             if net_edges is None:
                 net_edges = pd.DataFrame()
 
-            use_osm_net = st.checkbox("Show map (online)", value=True, key="net_osm", help="CartoDB base map — loads on Streamlit Cloud")
+            use_osm_net = st.checkbox("Show map (online)", value=True, key="net_osm", help="Stadia Maps (OSM) — ít bị rate-limit")
             net_animation_on_map = False
             if _HAS_STREAMLIT_FOLIUM and not net_nodes.empty:
                 try:
