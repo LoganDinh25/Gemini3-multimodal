@@ -754,10 +754,23 @@ class GraphEngine:
         """
         if not _HAS_FOLIUM:
             return None
-        
+        if nodes is None or nodes.empty:
+            return None
+        if edges is None:
+            edges = pd.DataFrame()
+        nodes = pd.DataFrame(nodes) if not isinstance(nodes, pd.DataFrame) else nodes
+        edges = pd.DataFrame(edges) if not isinstance(edges, pd.DataFrame) else edges
+        for col in ['lat', 'lon']:
+            if col not in nodes.columns:
+                return None
+        nodes = nodes.copy()
+        nodes['lat'] = pd.to_numeric(nodes['lat'], errors='coerce')
+        nodes['lon'] = pd.to_numeric(nodes['lon'], errors='coerce')
         valid_nodes = nodes.dropna(subset=['lat', 'lon'])
+        if valid_nodes.empty:
+            return None
         valid_nodes = valid_nodes[
-            (valid_nodes['lat'].between(8, 12)) & 
+            (valid_nodes['lat'].between(8, 12)) &
             (valid_nodes['lon'].between(103, 108))
         ]
         if valid_nodes.empty:

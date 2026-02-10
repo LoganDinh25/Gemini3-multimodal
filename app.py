@@ -6,6 +6,7 @@ Main Streamlit Application for Hackathon Demo
 import streamlit as st
 import json
 from pathlib import Path
+import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 
@@ -433,41 +434,57 @@ with tab_scenario:
         """, unsafe_allow_html=True)
         use_osm_tiles = st.checkbox("Show map (OpenStreetMap)", value=True, key="use_osm")
         animation_on_map = False
-        if _HAS_STREAMLIT_FOLIUM:
-            folium_map = services['graph'].visualize_network_map(
-                nodes=graph_data['nodes'],
-                edges=graph_data['edges'],
-                optimization_results=opt_results if opt_results else None,
-                highlight_paths=bool(opt_results),
-                commodity=st.session_state.commodity,
-                use_osm_tiles=use_osm_tiles
-            )
-            if folium_map:
-                st_folium(folium_map, width=None, height=500, key=f"scenario_folium_map_{st.session_state.period}_{st.session_state.commodity}")
-                if opt_results:
-                    st.caption("Use **time slider** below map to see optimal route animate from origin to destination (each OD/commodity).")
+        nodes_df = graph_data.get('nodes')
+        edges_df = graph_data.get('edges')
+        if nodes_df is not None and not isinstance(nodes_df, pd.DataFrame):
+            nodes_df = pd.DataFrame(nodes_df) if nodes_df else pd.DataFrame()
+        if edges_df is not None and not isinstance(edges_df, pd.DataFrame):
+            edges_df = pd.DataFrame(edges_df) if edges_df else pd.DataFrame()
+        if nodes_df is None:
+            nodes_df = pd.DataFrame()
+        if edges_df is None:
+            edges_df = pd.DataFrame()
+
+        if _HAS_STREAMLIT_FOLIUM and not nodes_df.empty:
+            try:
+                folium_map = services['graph'].visualize_network_map(
+                    nodes=nodes_df,
+                    edges=edges_df,
+                    optimization_results=opt_results if opt_results else None,
+                    highlight_paths=bool(opt_results),
+                    commodity=st.session_state.commodity,
+                    use_osm_tiles=use_osm_tiles
+                )
+                if folium_map:
+                    st_folium(folium_map, width=None, height=500, key=f"scenario_folium_map_{st.session_state.period}_{st.session_state.commodity}")
+                    if opt_results:
+                        st.caption("Use **time slider** below map to see optimal route animate from origin to destination (each OD/commodity).")
                     animation_on_map = True
-            else:
-                st.warning("Coordinates need WGS84. Install pyproj.")
+                else:
+                    raise ValueError("Folium returned None")
+            except (TypeError, ValueError, AttributeError, KeyError) as e:
+                if nodes_df.empty or edges_df.empty:
+                    st.warning("No nodes or edges to display.")
+                else:
+                    fig = services['graph'].visualize_network_interactive(
+                        nodes=nodes_df, edges=edges_df,
+                        optimization_results=opt_results, highlight_paths=bool(opt_results),
+                        commodity=st.session_state.commodity
+                    )
+                    st.plotly_chart(fig, use_container_width=True, key=f"scenario_map_{st.session_state.period}_{st.session_state.commodity}")
+        else:
+            if not (nodes_df.empty or edges_df.empty):
                 fig = services['graph'].visualize_network_interactive(
-                    nodes=graph_data['nodes'], edges=graph_data['edges'],
-                    optimization_results=opt_results, highlight_paths=bool(opt_results),
+                    nodes=nodes_df, edges=edges_df,
+                    optimization_results=opt_results if opt_results else None,
+                    highlight_paths=bool(opt_results),
                     commodity=st.session_state.commodity
                 )
                 st.plotly_chart(fig, use_container_width=True, key=f"scenario_map_{st.session_state.period}_{st.session_state.commodity}")
-        else:
-            fig = services['graph'].visualize_network_interactive(
-                nodes=graph_data['nodes'],
-                edges=graph_data['edges'],
-                optimization_results=opt_results if opt_results else None,
-                highlight_paths=bool(opt_results),
-                commodity=st.session_state.commodity
-            )
-            st.plotly_chart(fig, use_container_width=True, key=f"scenario_map_{st.session_state.period}_{st.session_state.commodity}")
-        if opt_results and not animation_on_map:
+        if opt_results and not animation_on_map and not (nodes_df.empty or edges_df.empty):
             fig_anim = services['graph'].visualize_network_animated(
-                nodes=graph_data['nodes'],
-                edges=graph_data['edges'],
+                nodes=nodes_df,
+                edges=edges_df,
                 optimization_results=opt_results,
                 commodity=st.session_state.commodity,
             )
