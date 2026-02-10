@@ -777,44 +777,57 @@ class GraphEngine:
             raw = nodes.dropna(subset=['lat', 'lon'])
             if raw.empty:
                 return None
-            try:
-                from coordinate_utils import convert_vn2000_to_wgs84
-                lats, lons = [], []
-                for _, row in raw.iterrows():
-                    x, y = float(row['lon']), float(row['lat'])
-                    if 400000 <= x <= 800000 and 1000000 <= y <= 1300000:
-                        lat, lon = convert_vn2000_to_wgs84(x, y)
-                        lats.append(lat); lons.append(lon)
-                    else:
-                        lats.append(y); lons.append(x)
-                if len(lats) == len(raw):
-                    valid_nodes = raw.copy()
-                    valid_nodes['lat'] = lats
-                    valid_nodes['lon'] = lons
-                else:
-                    valid_nodes = raw
-            except Exception:
+            # VN2000 (Mekong) -> WGS84: use coordinate_utils if available, else inline approximate
+            def _vn2000_to_wgs84(x: float, y: float):
+                if 400000 <= x <= 800000 and 1000000 <= y <= 1300000:
+                    try:
+                        from coordinate_utils import convert_vn2000_to_wgs84
+                        return convert_vn2000_to_wgs84(x, y)
+                    except Exception:
+                        pass
+                    # Inline approximate (Mekong): same as coordinate_utils fallback for Streamlit Cloud
+                    lon = 104.24 + (x - 416000) * (107.11 - 104.24) / (732000 - 416000)
+                    lat = 9.35 + (y - 1033000) * (11.04 - 9.35) / (1222000 - 1033000)
+                    return (lat, lon)
+                return (y, x) if 8 <= y <= 12 and 103 <= x <= 108 else (y, x)
+            lats, lons = [], []
+            for _, row in raw.iterrows():
+                x, y = float(row['lon']), float(row['lat'])
+                lat, lon = _vn2000_to_wgs84(x, y)
+                lats.append(lat)
+                lons.append(lon)
+            if len(lats) == len(raw):
+                valid_nodes = raw.copy()
+                valid_nodes['lat'] = lats
+                valid_nodes['lon'] = lons
+            else:
                 valid_nodes = raw
-            # If conversion failed, lat/lon may still be VN2000; Folium needs WGS84
             if not valid_nodes.empty:
                 lat_vals = pd.to_numeric(valid_nodes['lat'], errors='coerce')
                 lon_vals = pd.to_numeric(valid_nodes['lon'], errors='coerce')
-                if (lat_vals.max() > 90 or lat_vals.min() < -90 or
+                if (lat_vals.isna().all() or lon_vals.isna().all() or
+                        lat_vals.max() > 90 or lat_vals.min() < -90 or
                         lon_vals.max() > 180 or lon_vals.min() < -180):
                     return None
 
         if center_lat is None:
-            center_lat = valid_nodes['lat'].mean()
+            center_lat = float(valid_nodes['lat'].mean())
         if center_lon is None:
-            center_lon = valid_nodes['lon'].mean()
-        
-        # OSM = actual map; tiles=None = no map, white bg
+            center_lon = float(valid_nodes['lon'].mean())
+        if not (8 <= center_lat <= 12 and 103 <= center_lon <= 108):
+            center_lat = 10.0
+            center_lon = 105.5
+        center_lat = float(center_lat)
+        center_lon = float(center_lon)
+
+        # OSM = actual map (OpenStreetMap loads from CDN; works on Streamlit Cloud)
         if use_osm_tiles:
             m = folium.Map(
                 location=[center_lat, center_lon],
                 zoom_start=zoom_start,
                 tiles='OpenStreetMap',
-                control_scale=True
+                control_scale=True,
+                attr='© OpenStreetMap'
             )
         else:
             m = folium.Map(
