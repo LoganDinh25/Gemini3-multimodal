@@ -1,41 +1,41 @@
 {
   "region": "Mekong",
   "period": 1,
-  "total_cost": 232840909.0909091,
-  "total_time": 85762.62626262628,
+  "total_cost": 2767739898.9898996,
+  "total_time": 1094924.2424242424,
   "num_hubs": 0,
   "selected_hubs": [],
   "efficiency": 0.85,
   "solver_status": "optimal",
-  "solve_time": 0.04303312301635742,
+  "solve_time": 0.11197018623352051,
   "num_routes": 20,
   "total_routes_found": 37,
-  "total_demand": 40000.0,
+  "total_demand": 200000.00000000023,
   "top_routes": [
     {
       "route_id": 1,
       "path": [
         0,
-        2,
-        6,
+        46,
+        48,
         51,
         14
       ],
       "commodity": "Passenger",
       "mode": "multi-modal",
-      "cost": 3833333.3333333335,
-      "time": 23.0,
-      "flow": 1666.6666666666667,
+      "cost": 23333333.333333336,
+      "time": 28.0,
+      "flow": 8333.333333333334,
       "flow_ratio": 1.0,
       "od_pair": [
         0,
         14
       ],
-      "demand_od": 1666.6666666666667,
+      "demand_od": 8333.333333333334,
       "path_labels": [
         "HCM City",
-        "Cảng Nhơn Đức",
-        "Cảng Mỹ Thới Tiền Giang",
+        "",
+        "",
         "",
         "Kho Cảng Cần thơ"
       ],
@@ -48,27 +48,27 @@
       "route_id": 2,
       "path": [
         0,
-        2,
-        6,
+        46,
+        48,
         51,
         14,
         15
       ],
       "commodity": "Passenger",
       "mode": "multi-modal",
-      "cost": 4833333.333333334,
-      "time": 29.0,
-      "flow": 1666.6666666666667,
+      "cost": 28333333.333333336,
+      "time": 34.0,
+      "flow": 8333.333333333334,
       "flow_ratio": 1.0,
       "od_pair": [
         0,
         15
       ],
-      "demand_od": 1666.6666666666667,
+      "demand_od": 8333.333333333334,
       "path_labels": [
         "HCM City",
-        "Cảng Nhơn Đức",
-        "Cảng Mỹ Thới Tiền Giang",
+        "",
+        "",
         "",
         "Kho Cảng Cần thơ",
         "Kho Cảng Trung tâm vùng C_n th_"
@@ -92,15 +92,15 @@
       ],
       "commodity": "Passenger",
       "mode": "multi-modal",
-      "cost": 5166666.666666667,
+      "cost": 25833333.333333336,
       "time": 31.0,
-      "flow": 1666.6666666666667,
+      "flow": 8333.333333333334,
       "flow_ratio": 1.0,
       "od_pair": [
         21,
         0
       ],
-      "demand_od": 1666.6666666666667,
+      "demand_od": 8333.333333333334,
       "path_labels": [
         "Cửa Khẩu Hà Tiên - Hub Hà Tiên",
         "Cảng Bình Trị",
@@ -121,26 +121,28 @@
       "path": [
         21,
         65,
-        25,
-        26,
+        66,
+        74,
+        68,
         30
       ],
       "commodity": "Passenger",
-      "mode": "multi-modal",
-      "cost": 3666666.666666667,
-      "time": 22.0,
-      "flow": 1666.6666666666667,
+      "mode": "road",
+      "cost": 30000000.000000004,
+      "time": 36.0,
+      "flow": 8333.333333333334,
       "flow_ratio": 1.0,
       "od_pair": [
         21,
         30
       ],
-      "demand_od": 1666.6666666666667,
+      "demand_od": 8333.333333333334,
       "path_labels": [
         "Cửa Khẩu Hà Tiên - Hub Hà Tiên",
         "",
-        "Kho Cảng Rạch Giá Kiên giang",
-        "Kho lạnh Rạch giá - Hub Cảng Tắc cậu",
+        "",
+        "",
+        "",
         "Hub Cà Mau"
       ],
       "origin": 21,
@@ -154,27 +156,27 @@
         25,
         13,
         51,
-        6,
-        2,
+        48,
+        46,
         0
       ],
       "commodity": "Passenger",
       "mode": "multi-modal",
-      "cost": 3500000.0,
-      "time": 21.0,
-      "flow": 1666.6666666666667,
+      "cost": 25833333.333333336,
+      "time": 31.0,
+      "flow": 8333.333333333334,
       "flow_ratio": 1.0,
       "od_pair": [
         25,
         0
       ],
-      "demand_od": 1666.6666666666667,
+      "demand_od": 8333.333333333334,
       "path_labels": [
         "Kho Cảng Rạch Giá Kiên giang",
         "Cảng Hub Mỹ Thanh - An giang Mỹ thới",
         "",
-        "Cảng Mỹ Thới Tiền Giang",
-        "Cảng Nhơn Đức",
+        "",
+        "",
         "HCM City"
       ],
       "origin": 25,
@@ -191,15 +193,15 @@
       ],
       "commodity": "Passenger",
       "mode": "multi-modal",
-      "cost": 1500000.0,
+      "cost": 7500000.000000001,
       "time": 9.0,
-      "flow": 1666.6666666666667,
+      "flow": 8333.333333333334,
       "flow_ratio": 1.0,
       "od_pair": [
         25,
         30
       ],
-      "demand_od": 1666.6666666666667,
+      "demand_od": 8333.333333333334,
       "path_labels": [
         "Kho Cảng Rạch Giá Kiên giang",
         "Kho lạnh Rạch giá - Hub Cảng Tắc cậu",
@@ -219,15 +221,15 @@
       ],
       "commodity": "Rice",
       "mode": "water",
-      "cost": 333333.3333333333,
+      "cost": 1666666.6666666667,
       "time": 3.0,
-      "flow": 1111.111111111111,
+      "flow": 5555.555555555556,
       "flow_ratio": 1.0,
       "od_pair": [
         6,
         0
       ],
-      "demand_od": 1111.111111111111,
+      "demand_od": 5555.555555555556,
       "path_labels": [
         "Cảng Mỹ Thới Tiền Giang",
         "Cảng Nhơn Đức",
@@ -248,15 +250,15 @@
       ],
       "commodity": "Rice",
       "mode": "multi-modal",
-      "cost": 2000000.0,
+      "cost": 10000000.0,
       "time": 18.0,
-      "flow": 1111.111111111111,
+      "flow": 5555.555555555556,
       "flow_ratio": 1.0,
       "od_pair": [
         10,
         15
       ],
-      "demand_od": 1111.111111111111,
+      "demand_od": 5555.555555555556,
       "path_labels": [
         "Hub Cảng Cao Lãnh - Cảng Sa Đéc",
         "",
@@ -273,24 +275,24 @@
       "path": [
         11,
         13,
-        37,
+        14,
         15
       ],
       "commodity": "Rice",
       "mode": "road",
-      "cost": 1444444.4444444445,
+      "cost": 7222222.222222222,
       "time": 13.0,
-      "flow": 1111.111111111111,
+      "flow": 5555.555555555556,
       "flow_ratio": 1.0,
       "od_pair": [
         11,
         15
       ],
-      "demand_od": 1111.111111111111,
+      "demand_od": 5555.555555555556,
       "path_labels": [
         "Hub Cao Lãnh - Cảng Trần quốc toản",
         "Cảng Hub Mỹ Thanh - An giang Mỹ thới",
-        "Cảng Bình Minh",
+        "Kho Cảng Cần thơ",
         "Kho Cảng Trung tâm vùng C_n th_"
       ],
       "origin": 11,
@@ -310,15 +312,15 @@
       ],
       "commodity": "Rice",
       "mode": "multi-modal",
-      "cost": 2111111.111111111,
+      "cost": 10555555.555555556,
       "time": 19.0,
-      "flow": 1111.111111111111,
+      "flow": 5555.555555555556,
       "flow_ratio": 1.0,
       "od_pair": [
         12,
         0
       ],
-      "demand_od": 1111.111111111111,
+      "demand_od": 5555.555555555556,
       "path_labels": [
         "Cảng Vĩnh Xương - Tân Châu",
         "Cảng Hồng Ngự",
@@ -337,26 +339,26 @@
       "path": [
         13,
         51,
-        6,
-        2,
+        48,
+        46,
         0
       ],
       "commodity": "Rice",
-      "mode": "multi-modal",
-      "cost": 2000000.0,
-      "time": 18.0,
-      "flow": 1111.111111111111,
+      "mode": "road",
+      "cost": 15555555.555555556,
+      "time": 28.0,
+      "flow": 5555.555555555556,
       "flow_ratio": 1.0,
       "od_pair": [
         13,
         0
       ],
-      "demand_od": 1111.111111111111,
+      "demand_od": 5555.555555555556,
       "path_labels": [
         "Cảng Hub Mỹ Thanh - An giang Mỹ thới",
         "",
-        "Cảng Mỹ Thới Tiền Giang",
-        "Cảng Nhơn Đức",
+        "",
+        "",
         "HCM City"
       ],
       "origin": 13,
@@ -369,26 +371,26 @@
       "path": [
         14,
         51,
-        6,
-        2,
+        48,
+        46,
         0
       ],
       "commodity": "Rice",
       "mode": "multi-modal",
-      "cost": 2000000.0,
-      "time": 18.0,
-      "flow": 1111.111111111111,
+      "cost": 15555555.555555556,
+      "time": 28.0,
+      "flow": 5555.555555555556,
       "flow_ratio": 1.0,
       "od_pair": [
         14,
         0
       ],
-      "demand_od": 1111.111111111111,
+      "demand_od": 5555.555555555556,
       "path_labels": [
         "Kho Cảng Cần thơ",
         "",
-        "Cảng Mỹ Thới Tiền Giang",
-        "Cảng Nhơn Đức",
+        "",
+        "",
         "HCM City"
       ],
       "origin": 14,
@@ -401,28 +403,26 @@
       "path": [
         16,
         61,
-        58,
-        8,
-        2,
+        59,
+        75,
         0
       ],
       "commodity": "Rice",
-      "mode": "multi-modal",
-      "cost": 2888888.888888889,
-      "time": 26.0,
-      "flow": 1111.111111111111,
+      "mode": "road",
+      "cost": 15555555.555555556,
+      "time": 28.0,
+      "flow": 5555.555555555556,
       "flow_ratio": 1.0,
       "od_pair": [
         16,
         0
       ],
-      "demand_od": 1111.111111111111,
+      "demand_od": 5555.555555555556,
       "path_labels": [
         "Cảng Đại Ngải",
         "",
         "",
-        "Cảng Hàm Luông",
-        "Cảng Nhơn Đức",
+        "",
         "HCM City"
       ],
       "origin": 16,
@@ -443,15 +443,15 @@
       ],
       "commodity": "Rice",
       "mode": "multi-modal",
-      "cost": 3333333.3333333335,
-      "time": 30.0,
-      "flow": 1111.111111111111,
+      "cost": 15555555.555555556,
+      "time": 28.0,
+      "flow": 5555.555555555556,
       "flow_ratio": 1.0,
       "od_pair": [
         19,
         0
       ],
-      "demand_od": 1111.111111111111,
+      "demand_od": 5555.555555555556,
       "path_labels": [
         "Cửa Khẩu Tinh Biên - Kho cửa khẩu An giang",
         "",
@@ -470,31 +470,33 @@
       "route_id": 15,
       "path": [
         27,
-        15,
-        37,
-        58,
-        8,
-        2,
+        56,
+        55,
+        52,
+        51,
+        48,
+        46,
         0
       ],
       "commodity": "Rice",
-      "mode": "multi-modal",
-      "cost": 3333333.3333333335,
-      "time": 30.0,
-      "flow": 1111.111111111111,
+      "mode": "road",
+      "cost": 28888888.888888888,
+      "time": 52.0,
+      "flow": 5555.555555555556,
       "flow_ratio": 1.0,
       "od_pair": [
         27,
         0
       ],
-      "demand_od": 1111.111111111111,
+      "demand_od": 5555.555555555556,
       "path_labels": [
         "Hub Vĩ Thanh",
-        "Kho Cảng Trung tâm vùng C_n th_",
-        "Cảng Bình Minh",
         "",
-        "Cảng Hàm Luông",
-        "Cảng Nhơn Đức",
+        "",
+        "",
+        "",
+        "",
+        "",
         "HCM City"
       ],
       "origin": 27,
@@ -513,15 +515,15 @@
       ],
       "commodity": "Fisheries",
       "mode": "road",
-      "cost": 1545454.5454545454,
+      "cost": 7727272.727272727,
       "time": 17.0,
-      "flow": 909.0909090909091,
+      "flow": 4545.454545454545,
       "flow_ratio": 1.0,
       "od_pair": [
         12,
         15
       ],
-      "demand_od": 909.0909090909091,
+      "demand_od": 4545.454545454545,
       "path_labels": [
         "Cảng Vĩnh Xương - Tân Châu",
         "Cảng Bình Long",
@@ -539,28 +541,30 @@
       "path": [
         19,
         44,
-        38,
-        13,
-        14,
+        69,
+        54,
+        56,
+        55,
         15
       ],
       "commodity": "Fisheries",
       "mode": "road",
-      "cost": 2363636.3636363638,
-      "time": 26.0,
-      "flow": 909.0909090909091,
+      "cost": 20000000.0,
+      "time": 44.0,
+      "flow": 4545.454545454545,
       "flow_ratio": 1.0,
       "od_pair": [
         19,
         15
       ],
-      "demand_od": 909.0909090909091,
+      "demand_od": 4545.454545454545,
       "path_labels": [
         "Cửa Khẩu Tinh Biên - Kho cửa khẩu An giang",
         "",
-        "Cảng Bình Long",
-        "Cảng Hub Mỹ Thanh - An giang Mỹ thới",
-        "Kho Cảng Cần thơ",
+        "",
+        "",
+        "",
+        "",
         "Kho Cảng Trung tâm vùng C_n th_"
       ],
       "origin": 19,
@@ -572,31 +576,27 @@
       "route_id": 18,
       "path": [
         20,
-        19,
-        44,
-        38,
-        13,
-        14,
+        65,
+        66,
+        27,
         15
       ],
       "commodity": "Fisheries",
-      "mode": "road",
-      "cost": 2272727.272727273,
-      "time": 25.0,
-      "flow": 909.0909090909091,
+      "mode": "multi-modal",
+      "cost": 11818181.818181816,
+      "time": 26.0,
+      "flow": 4545.454545454545,
       "flow_ratio": 1.0,
       "od_pair": [
         20,
         15
       ],
-      "demand_od": 909.0909090909091,
+      "demand_od": 4545.454545454545,
       "path_labels": [
         "Cửa khẩu Giang Thanh",
-        "Cửa Khẩu Tinh Biên - Kho cửa khẩu An giang",
         "",
-        "Cảng Bình Long",
-        "Cảng Hub Mỹ Thanh - An giang Mỹ thới",
-        "Kho Cảng Cần thơ",
+        "",
+        "Hub Vĩ Thanh",
         "Kho Cảng Trung tâm vùng C_n th_"
       ],
       "origin": 20,
@@ -618,15 +618,15 @@
       ],
       "commodity": "Fisheries",
       "mode": "multi-modal",
-      "cost": 2818181.8181818184,
+      "cost": 14090909.09090909,
       "time": 31.0,
-      "flow": 909.0909090909091,
+      "flow": 4545.454545454545,
       "flow_ratio": 1.0,
       "od_pair": [
         21,
         0
       ],
-      "demand_od": 909.0909090909091,
+      "demand_od": 4545.454545454545,
       "path_labels": [
         "Cửa Khẩu Hà Tiên - Hub Hà Tiên",
         "Cảng Bình Trị",
@@ -646,29 +646,27 @@
       "route_id": 20,
       "path": [
         21,
-        40,
-        38,
-        13,
-        14,
+        65,
+        66,
+        27,
         15
       ],
       "commodity": "Fisheries",
       "mode": "multi-modal",
-      "cost": 2090909.090909091,
-      "time": 23.0,
-      "flow": 909.0909090909091,
+      "cost": 11818181.818181816,
+      "time": 26.0,
+      "flow": 4545.454545454545,
       "flow_ratio": 1.0,
       "od_pair": [
         21,
         15
       ],
-      "demand_od": 909.0909090909091,
+      "demand_od": 4545.454545454545,
       "path_labels": [
         "Cửa Khẩu Hà Tiên - Hub Hà Tiên",
-        "Cảng Bình Trị",
-        "Cảng Bình Long",
-        "Cảng Hub Mỹ Thanh - An giang Mỹ thới",
-        "Kho Cảng Cần thơ",
+        "",
+        "",
+        "Hub Vĩ Thanh",
         "Kho Cảng Trung tâm vùng C_n th_"
       ],
       "origin": 21,
@@ -679,14 +677,14 @@
   ],
   "hub_utilization": {},
   "modal_split": {
-    "road": 0.15637860082304533,
-    "water": 0.04526748971193417,
-    "multi-modal": 0.7983539094650209
+    "road": 0.32304526748971185,
+    "water": 0.045267489711934145,
+    "multi-modal": 0.6316872427983536
   },
   "cost_breakdown": {
-    "transportation": 85762626.26262628,
-    "hub_service": 0.0,
-    "mode_switching": 15707070.707070718,
+    "transportation": 548207070.7070707,
+    "hub_service": 546717171.7171717,
+    "mode_switching": 20959595.959595963,
     "hub_upgrade": 0.0,
     "arc_upgrade": 0.0
   },
@@ -1923,5 +1921,5 @@
       1167395.309
     ]
   },
-  "export_timestamp": "2026-02-09T19:13:17.653726"
+  "export_timestamp": "2026-02-09T23:25:34.630538"
 }

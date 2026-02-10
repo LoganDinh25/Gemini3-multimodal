@@ -27,178 +27,163 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for beautiful UI
+# Custom CSS - Decision Intelligence Platform (theo mô tả)
+# Bảng màu: Navy chủ đạo, cyan nhấn AI/Gemini, xanh lá insight tốt, vàng/cam cảnh báo
 st.markdown("""
 <style>
-    /* Import Google Fonts */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    * { font-family: 'Inter', sans-serif; }
     
-    /* Global Styles */
-    * {
-        font-family: 'Inter', sans-serif;
-    }
-    
-    /* Main background gradient */
+    /* Nền chính: Navy / Deep Blue - ổn định, chiến lược */
     .stApp {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(180deg, #0f172a 0%, #1e3a5f 35%, #0f172a 100%);
+        background-attachment: fixed;
+    }
+    [data-testid="stAppViewContainer"] {
+        background: transparent;
     }
     
-    /* Hero section */
-    .hero-container {
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%);
-        padding: 3rem 2rem;
-        border-radius: 20px;
-        text-align: center;
-        margin-bottom: 2rem;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    }
-    
-    .hero-title {
-        font-size: 3rem;
-        font-weight: 700;
-        color: white;
-        margin-bottom: 0.5rem;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-    }
-    
-    .hero-subtitle {
-        font-size: 1.5rem;
-        color: rgba(255,255,255,0.9);
-        font-weight: 300;
-        margin-bottom: 1rem;
-    }
-    
-    .hero-tagline {
-        font-size: 1.2rem;
-        color: rgba(255,255,255,0.85);
-        font-style: italic;
-        margin-top: 1rem;
-    }
-    
-    /* Card styles */
+    /* Panel: nền trắng / xám rất nhạt - tăng độ đọc */
     .custom-card {
-        background: white;
-        padding: 2rem;
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        margin-bottom: 1.5rem;
-    }
-    
-    .card-header {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #2c3e50;
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    
-    .card-subheader {
-        font-size: 1rem;
-        color: #7f8c8d;
-        margin-bottom: 1.5rem;
-    }
-    
-    /* Gemini insight card */
-    .gemini-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 2rem;
-        border-radius: 15px;
-        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
-        margin-bottom: 1.5rem;
-    }
-    
-    .gemini-header {
-        font-size: 1.8rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    
-    /* Button styles */
-    .stButton > button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        padding: 0.75rem 2rem;
-        font-size: 1rem;
-        font-weight: 600;
-        border-radius: 10px;
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        transition: all 0.3s ease;
-    }
-    
-    .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.6);
-    }
-    
-    /* Metric cards */
-    .metric-card {
-        background: linear-gradient(135deg, #f6f8fb 0%, #ffffff 100%);
+        background: rgba(248, 250, 252, 0.98);
         padding: 1.5rem;
         border-radius: 12px;
-        text-align: center;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+        margin-bottom: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+    }
+    .card-header {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .card-subheader {
+        font-size: 0.9rem;
+        color: #64748b;
+        margin-bottom: 1rem;
     }
     
-    .metric-value {
-        font-size: 2rem;
+    /* Gemini card - xanh dương sáng / cyan nhấn AI */
+    .gemini-card {
+        background: linear-gradient(135deg, #0e7490 0%, #06b6d4 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 28px rgba(6, 182, 212, 0.35);
+        margin-bottom: 1rem;
+    }
+    .gemini-header {
+        font-size: 1.5rem;
         font-weight: 700;
-        color: #667eea;
         margin-bottom: 0.5rem;
     }
     
-    .metric-label {
-        font-size: 0.9rem;
-        color: #7f8c8d;
-        font-weight: 500;
+    /* Nút: Run Scenario = xanh đậm (navy); Ask Gemini 3 = xanh sáng/cyan nổi bật */
+    .stButton > button {
+        background: linear-gradient(135deg, #1e3a5f 0%, #334155 100%) !important;
+        color: white !important;
+        border: none !important;
+        padding: 0.6rem 1.5rem !important;
+        font-size: 0.95rem !important;
+        font-weight: 600 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+        transition: all 0.2s ease !important;
+    }
+    .stButton > button:hover {
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    }
+    /* Ask Gemini 3 (nút thứ 2 trong hàng hero) - cyan nổi bật */
+    [data-testid="stHorizontalBlock"]:first-of-type > div:nth-child(2) .stButton > button {
+        background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%) !important;
+        box-shadow: 0 2px 12px rgba(6, 182, 212, 0.45) !important;
+    }
+    [data-testid="stHorizontalBlock"]:first-of-type > div:nth-child(2) .stButton > button:hover {
+        box-shadow: 0 4px 16px rgba(6, 182, 212, 0.5) !important;
     }
     
-    /* Success/Warning/Info boxes */
-    .stSuccess, .stWarning, .stInfo {
-        border-radius: 10px;
+    .metric-card {
+        background: rgba(248, 250, 252, 0.98);
         padding: 1rem;
-    }
-    
-    /* Selectbox and slider styling */
-    .stSelectbox > div > div {
         border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
     }
+    .metric-value { font-size: 1.5rem; font-weight: 700; color: #0e7490; }
+    .metric-label { font-size: 0.8rem; color: #64748b; }
     
-    .stSlider > div > div {
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-    }
-    
-    /* Navigation tabs */
-    .nav-container {
-        background: rgba(255,255,255,0.95);
-        padding: 1rem 2rem;
-        border-radius: 15px;
-        margin-bottom: 2rem;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-    }
-    
-    /* Insight list items */
-    .insight-item {
-        padding: 1rem;
-        margin: 0.5rem 0;
-        background: rgba(255,255,255,0.1);
+    /* Tabs (nếu giữ) - navy/cyan */
+    .stTabs [data-baseweb="tab-list"] {
+        background: rgba(255, 255, 255, 0.06);
         border-radius: 8px;
-        border-left: 4px solid #f39c12;
+        padding: 4px;
+    }
+    .stTabs [data-baseweb="tab"] { color: rgba(255, 255, 255, 0.85); font-weight: 500; }
+    .stTabs [aria-selected="true"] {
+        background: rgba(6, 182, 212, 0.25);
+        color: white !important;
     }
     
-    .risk-item {
-        border-left-color: #e74c3c;
+    /* Chữ trên nền navy - dễ đọc */
+    .stApp [data-testid="stMarkdown"] p,
+    .stApp [data-testid="stMarkdown"] li,
+    .stApp [data-testid="stMarkdown"] {
+        color: rgba(255, 255, 255, 0.95) !important;
     }
+    .stApp [data-testid="stCaptionContainer"],
+    .stApp small { color: rgba(255, 255, 255, 0.88) !important; }
+    label, .stSelectbox label, .stSlider label, .stCheckbox label,
+    [data-testid="stWidgetLabel"] p, .stCheckbox [data-testid="stWidgetLabel"] {
+        color: rgba(255, 255, 255, 0.98) !important;
+    }
+    /* Placeholder trong input - sáng trên nền tối */
+    .stTextInput input::placeholder { color: rgba(255, 255, 255, 0.65) !important; }
     
-    .action-item {
-        border-left-color: #27ae60;
+    .stSuccess [data-testid="stMarkdown"], .stWarning [data-testid="stMarkdown"], .stInfo [data-testid="stMarkdown"] {
+        color: inherit !important;
     }
+    /* Spinner "Running model (2–5 min)..." và các spinner khác - chữ sáng hơn */
+    [data-testid="stSpinner"], [data-testid="stSpinner"] *, [data-testid="stSpinner"] + div,
+    [data-testid="stSpinner"] ~ [data-testid="stMarkdown"] { color: rgba(255,255,255,0.95) !important; }
+    /* Tab Network: 3 route blocks - chữ màu tối (dùng span thay small để tránh .stApp small trắng) */
+    .network-route-card, .network-route-card *, .network-route-mode,
+    [data-testid="stMarkdown"] .network-route-card,
+    [data-testid="stMarkdown"] .network-route-card * { color: #1e293b !important; }
+    .stSelectbox > div { background: rgba(255,255,255,0.95) !important; }
+    .stTextInput > div > input { background: rgba(255,255,255,0.95) !important; color: #1e293b !important; }
+    
+    /* Insight blocks: nền sáng hẳn để chữ đọc rõ (✓ ⚠ ➜) */
+    .insight-item {
+        padding: 0.75rem 1rem;
+        margin: 0.5rem 0;
+        background: #f0fdf4 !important;
+        border-radius: 8px;
+        border-left: 4px solid #22c55e;
+        color: #166534 !important;
+    }
+    .insight-warning {
+        padding: 0.75rem 1rem;
+        margin: 0.5rem 0;
+        background: #fffbeb !important;
+        border-radius: 8px;
+        border-left: 4px solid #eab308;
+        color: #854d0e !important;
+    }
+    .insight-action {
+        padding: 0.75rem 1rem;
+        margin: 0.5rem 0;
+        background: #ecfeff !important;
+        border-radius: 8px;
+        border-left: 4px solid #06b6d4;
+        color: #0e7490 !important;
+    }
+    /* Chú thích bản đồ: chữ tối (#0f172a), id ghi đè .stApp [data-testid="stMarkdown"] trắng */
+    #map-legend-box, #map-legend-box p { color: #0f172a !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -232,149 +217,113 @@ if 'scenario_chat_expanded' not in st.session_state:
     st.session_state.scenario_chat_expanded = False
 
 # ============================================================================
-# HEADER WITH NAVIGATION
+# HERO / HEADER - Decision Intelligence Platform
+# Logo Gemini (não/brain), tagline, nút Run Scenario (navy) + Ask Gemini 3 (cyan)
 # ============================================================================
-col_header_left, col_header_right = st.columns([3, 1])
-
-with col_header_left:
-    st.markdown("""
-    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; font-weight: bold;">G</div>
-        <div>
-            <div style="font-size: 1.8rem; font-weight: 700; color: #2c3e50; margin: 0;">Graph-Aware Logistics Planner</div>
-            <div style="font-size: 1rem; color: #7f8c8d; margin: 0;">Powered by Gemini 3</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col_header_right:
-    st.markdown("""
-    <div style="display: flex; gap: 1rem; justify-content: flex-end; align-items: center; margin-top: 1rem;">
-        <div style="width: 35px; height: 35px; background: #ecf0f1; border-radius: 50%; display: flex; align-items: center; justify-content: center;">👤</div>
-        <div style="width: 35px; height: 35px; background: #ecf0f1; border-radius: 50%; display: flex; align-items: center; justify-content: center;">⚙️</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-# Navigation Tabs
-tab1, tab2, tab3, tab4 = st.tabs(["Scenario", "Network", "Explanation", "What-If"])
-
-# Main banner
-col_banner_left, col_banner_right = st.columns([3, 1])
-with col_banner_left:
-    st.markdown("""
-    <div style="padding: 1rem 0;">
-        <h2 style="margin: 0; color: #2c3e50; font-size: 2rem; font-weight: 700;">Turn complex transport networks into explainable decisions</h2>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col_banner_right:
-    st.markdown("<br>", unsafe_allow_html=True)
-    col_btn1, col_btn2 = st.columns(2)
-    with col_btn1:
-        if st.button("🚀 Run Scenario", type="primary", use_container_width=True):
-            st.session_state.run_scenario = True
-            st.session_state.generate_plan = True
-            # Auto-load optimization results
-            with st.spinner("🔍 Loading optimization results..."):
-                opt_results = services['loader'].load_optimization_results(st.session_state.region, st.session_state.period)
-                if opt_results:
-                    st.session_state.optimization_results = opt_results
-                    st.success("✅ Scenario loaded successfully!")
-                else:
-                    st.warning("⚠️ No optimization results found for this period. Please check data files.")
-    
-    with col_btn2:
-        if st.button("🧠 Ask Gemini 3", type="primary", use_container_width=True):
-            if st.session_state.optimization_results:
-                st.session_state.ask_gemini = True
-                st.session_state.scenario_chat_expanded = True
-                st.success("💬 Chat đã mở! Cuộn xuống để hỏi Gemini 3.")
-            else:
-                st.warning("⚠️ Vui lòng chạy 'Run Scenario' trước!")
-
-# Use tab1 for main scenario view
-with tab1:
-    # Region selector - must be defined first
-    available_regions = services['loader'].get_available_regions()
-    try:
-        region_index = available_regions.index(st.session_state.region) if st.session_state.region in available_regions else 0
-    except (ValueError, AttributeError):
-        region_index = 0
-    
-    region = st.selectbox(
-        "🌍 Region",
-        options=available_regions,
-        index=region_index,
-        help="Select the logistics region to analyze"
-    )
-    st.session_state.region = region
-
-    # ============================================================================
-    # SCENARIO SELECTOR - LEFT PANEL STYLE
-    # ============================================================================
-    col_left, col_middle, col_right = st.columns([1, 2, 1])
-    
-    with col_left:
-        st.markdown("""
-        <div class="custom-card" style="min-height: 400px;">
-            <div class="card-header">
-                🎯 Set Transport Scenario
+st.markdown("""
+<div class="hero-header" style="
+    position: relative;
+    padding: 1.5rem 0 1rem 0;
+    margin-bottom: 0.5rem;
+    border-radius: 0 0 16px 16px;
+    background: linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(30,58,95,0.6) 50%, rgba(15,23,42,0.95) 100%);
+    border-bottom: 1px solid rgba(6, 182, 212, 0.2);
+">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 1.25rem;">
+            <div style="
+                width: 52px; height: 52px;
+                background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+                border-radius: 14px;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 1.75rem;
+                box-shadow: 0 0 24px rgba(6, 182, 212, 0.5), 0 4px 12px rgba(0,0,0,0.2);
+            " title="Gemini">🧠</div>
+            <div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: white; margin: 0; letter-spacing: -0.02em;">Graph-Aware Logistics Planner</div>
+                <div style="font-size: 0.9rem; color: rgba(6, 182, 212, 0.95); margin: 0.2rem 0 0 0;">Powered by Gemini 3</div>
             </div>
         </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <div style="width: 36px; height: 36px; background: rgba(255,255,255,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">👤</div>
+            <div style="width: 36px; height: 36px; background: rgba(255,255,255,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">⚙️</div>
+        </div>
+    </div>
+    <p style="margin: 1rem 0 0 0; color: rgba(255,255,255,0.9); font-size: 1.1rem; font-weight: 500;">Turn complex transport networks into explainable decisions</p>
+</div>
+""", unsafe_allow_html=True)
+
+# Action buttons: Run Scenario (navy) | Ask Gemini 3 (cyan - nổi bật)
+col_btn1, col_btn2, col_spacer = st.columns([1, 1, 4])
+with col_btn1:
+    if st.button("Run Scenario", type="primary", use_container_width=True, key="btn_run_scenario"):
+        st.session_state.run_scenario = True
+        st.session_state.generate_plan = True
+        with st.spinner("Loading optimization results..."):
+            opt_results = services['loader'].load_optimization_results(st.session_state.region, st.session_state.period)
+            if opt_results:
+                st.session_state.optimization_results = opt_results
+                st.success("Scenario loaded successfully.")
+            else:
+                st.warning("No optimization results found for this period.")
+
+with col_btn2:
+    if st.button("Ask Gemini 3", type="primary", use_container_width=True, key="btn_ask_gemini"):
+        if st.session_state.optimization_results:
+            st.session_state.ask_gemini = True
+            st.session_state.scenario_chat_expanded = True
+            st.success("Chat opened. Scroll down to ask Gemini 3.")
+        else:
+            st.warning("Run Scenario first.")
+
+# ============================================================================
+# TABS: Scenario (main) | Network | Explanation | What-If
+# ============================================================================
+tab_scenario, tab_network, tab_explanation, tab_whatif = st.tabs(["Scenario", "Network", "Explanation", "What-If"])
+
+with tab_scenario:
+    col_left, col_middle, col_right = st.columns([1, 2, 1])
+
+    with col_left:
+        # ---------- Set Transport Scenario (gọn, ít chữ) ----------
+        st.markdown("""
+        <div style="background: rgba(248,250,252,0.98); padding: 1.25rem; border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin-bottom: 1rem;">
+            <div style="font-size: 1.1rem; font-weight: 600; color: #1e293b;">Set Transport Scenario</div>
+        </div>
         """, unsafe_allow_html=True)
-        
-        period = st.selectbox(
-            "Period:",
-            options=[1, 2, 3, 4],
-            index=st.session_state.period - 1 if st.session_state.period in [1, 2, 3, 4] else 0,
-            help="Planning period for analysis"
-        )
+        available_regions = services['loader'].get_available_regions()
+        try:
+            region_index = available_regions.index(st.session_state.region) if st.session_state.region in available_regions else 0
+        except (ValueError, AttributeError):
+            region_index = 0
+        region = st.selectbox("Region", options=available_regions, index=region_index, help="Logistics region")
+        st.session_state.region = region
+        period = st.selectbox("Period", options=[1, 2, 3, 4], index=st.session_state.period - 1 if st.session_state.period in [1, 2, 3, 4] else 0)
         st.session_state.period = period
-        
-        # Commodity options matching model_gurobi.py
         commodity_options = ["Passenger", "Rice", "Fisheries", "Fruits & Vegetables"]
         try:
             commodity_index = commodity_options.index(st.session_state.commodity) if st.session_state.commodity in commodity_options else 0
         except (ValueError, AttributeError):
             commodity_index = 0
-        
-        commodity = st.selectbox(
-            "Commodity:",
-            options=commodity_options,
-            index=commodity_index,
-            help="Type of cargo to optimize"
-        )
+        commodity = st.selectbox("Commodity", options=commodity_options, index=commodity_index)
         st.session_state.commodity = commodity
-        
         st.markdown("<br>", unsafe_allow_html=True)
-        priority = st.slider(
-            "Priority:",
-            min_value=0.0,
-            max_value=1.0,
-            value=st.session_state.priority,
-            step=0.1,
-            help="0 = minimize cost, 1 = minimize time"
-        )
+        priority = st.slider("Priority", min_value=0.0, max_value=1.0, value=st.session_state.priority, step=0.1, help="Cost ↔ Speed")
         st.session_state.priority = priority
-        
-        # Display priority labels
         col_cost, col_speed = st.columns(2)
         with col_cost:
-            st.markdown("<small>Cost</small>", unsafe_allow_html=True)
+            st.markdown("<small style='color: rgba(255,255,255,0.9);'>Cost</small>", unsafe_allow_html=True)
         with col_speed:
-            st.markdown("<div style='text-align: right;'><small>Speed</small></div>", unsafe_allow_html=True)
-        
+            st.markdown("<div style='text-align: right;'><small style='color: rgba(255,255,255,0.9);'>Speed</small></div>", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("Generate Plan", type="primary", use_container_width=True):
+        if st.button("Generate Plan", type="primary", use_container_width=True, key="btn_generate_plan"):
             st.session_state.generate_plan = True
-        
-        # Chạy model_gurobi.py (dùng đúng format demand, cost từ arcs_remapped, nodes)
-        st.markdown("---")
-        st.caption("Mặc định đọc từ file JSON. Chạy model_gurobi.py:")
-        if st.button("🔄 Chạy Gurobi", key="run_gurobi", use_container_width=True, help="Chạy model_gurobi.py (data từ arcs_remapped.csv, nodes_remapped_with_coords.csv)"):
+        st.caption("Run optimization (model_gurobi.py). Default: load from JSON.")
+        if st.button("Run Gurobi", key="run_gurobi", use_container_width=True):
             import subprocess
             try:
-                with st.spinner("⏳ Đang chạy model_gurobi.py... (có thể mất 2-5 phút)"):
+                with st.spinner("Running model (2–5 min)..."):
                     result = subprocess.run(
                         ["python", "model_gurobi.py"],
                         cwd=Path(__file__).parent,
@@ -383,63 +332,55 @@ with tab1:
                         timeout=600
                     )
                 if result.returncode == 0:
-                    st.success("✅ model_gurobi.py hoàn thành! Xem kết quả trong terminal.")
+                    st.success("Done.")
                 else:
-                    st.warning(f"⚠️ Thoát với code {result.returncode}. Xem terminal để debug.")
+                    st.warning(f"Exit code {result.returncode}.")
             except subprocess.TimeoutExpired:
-                st.warning("⚠️ Timeout (10 phút). Model vẫn có thể đang chạy trong terminal.")
+                st.warning("Timeout. Model may still be running.")
             except FileNotFoundError:
-                st.error("❌ Không tìm thấy model_gurobi.py")
+                st.error("model_gurobi.py not found.")
             except Exception as e:
-                st.error(f"❌ Lỗi: {e}")
-    
+                st.error(str(e))
+
     with col_middle:
-        # Always load and display map (from Mekong data)
-        # Load data from Mekong
         graph_data = services['loader'].load_region_data(st.session_state.region)
-        
-        # Try to load optimization results
-        opt_results = st.session_state.optimization_results
-        if not opt_results:
-            opt_results = services['loader'].load_optimization_results(st.session_state.region, st.session_state.period)
-            if opt_results:
-                st.session_state.optimization_results = opt_results
-        
-        # Always show map visualization (even without optimization results)
+        # Luôn load kết quả theo period hiện tại để đổi Period cập nhật map
+        opt_results = services['loader'].load_optimization_results(st.session_state.region, st.session_state.period)
+        if opt_results:
+            st.session_state.optimization_results = opt_results
+        else:
+            opt_results = st.session_state.optimization_results
         st.markdown("""
-        <div class="custom-card">
-            <div class="card-header">🧠 Gemini 3 Decision Insights</div>
+        <div class="custom-card" style="margin-bottom: 0.75rem;">
+            <div class="card-header" style="font-size: 1rem;">Network Visualization</div>
+            <div class="card-subheader" style="margin-bottom: 0;">Hubs & routes · Waterway (blue) · Roadway (gray)</div>
         </div>
         """, unsafe_allow_html=True)
-        
-        # Toggle: Real map (Folium) vs Graph (Plotly)
-        use_real_map = st.checkbox(
-            "🗺️ Hiển thị bản đồ thực tế (OpenStreetMap)",
-            value=True,
-            help="Bật để xem network trên bản đồ thực tế. Tắt để xem dạng đồ thị."
-        )
-        
-        if use_real_map and _HAS_STREAMLIT_FOLIUM:
-            # Real map with Folium
+        use_osm_tiles = st.checkbox("Show map (OpenStreetMap)", value=True, key="use_osm")
+        animation_on_map = False
+        if _HAS_STREAMLIT_FOLIUM:
             folium_map = services['graph'].visualize_network_map(
                 nodes=graph_data['nodes'],
                 edges=graph_data['edges'],
                 optimization_results=opt_results if opt_results else None,
                 highlight_paths=bool(opt_results),
-                commodity=st.session_state.commodity
+                commodity=st.session_state.commodity,
+                use_osm_tiles=use_osm_tiles
             )
             if folium_map:
-                st_folium(folium_map, width=None, height=500, key="scenario_folium_map")
+                st_folium(folium_map, width=None, height=500, key=f"scenario_folium_map_{st.session_state.period}_{st.session_state.commodity}")
+                if opt_results:
+                    st.caption("Dùng **thanh thời gian** phía dưới bản đồ để xem đường optimal vẽ dần từ điểm đầu đến điểm cuối (từng cặp OD/commodity).")
+                    animation_on_map = True
             else:
-                st.warning("Tọa độ chưa chuẩn WGS84. Dùng đồ thị hoặc cài pyproj để chuyển đổi tự động.")
+                st.warning("Coordinates need WGS84. Install pyproj.")
                 fig = services['graph'].visualize_network_interactive(
                     nodes=graph_data['nodes'], edges=graph_data['edges'],
                     optimization_results=opt_results, highlight_paths=bool(opt_results),
                     commodity=st.session_state.commodity
                 )
-                st.plotly_chart(fig, use_container_width=True, key="scenario_map")
+                st.plotly_chart(fig, use_container_width=True, key=f"scenario_map_{st.session_state.period}_{st.session_state.commodity}")
         else:
-            # Plotly graph
             fig = services['graph'].visualize_network_interactive(
                 nodes=graph_data['nodes'],
                 edges=graph_data['edges'],
@@ -447,92 +388,113 @@ with tab1:
                 highlight_paths=bool(opt_results),
                 commodity=st.session_state.commodity
             )
-            st.plotly_chart(fig, use_container_width=True, key="scenario_map")
-        
-        # Show insights only if we have optimization results
-        if opt_results:
-                
-                # Textual insights
-                st.markdown("""
-                <div class="custom-card" style="margin-top: 1rem;">
-                    <h4 style="color: #667eea; margin-bottom: 1rem;">📋 Insights</h4>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                insights = opt_results.get('insights', {})
-                if insights:
-                    for finding in insights.get('key_findings', []):
-                        st.markdown(f"""
-                        <div style="padding: 0.75rem; margin: 0.5rem 0; background: #e8f5e9; border-radius: 8px; border-left: 4px solid #27ae60;">
-                            ✓ {finding}
-                        </div>
-                        """, unsafe_allow_html=True)
-                
-                # Auto-expand chat when Ask Gemini 3 was clicked
-                if st.session_state.get('ask_gemini', False):
-                    st.session_state.scenario_chat_expanded = True
-                    st.session_state.ask_gemini = False
-                
-                # + Ask more... - Chat with Gemini (functional)
-                with st.expander("💬 + Ask more... (Chat với Gemini 3)", expanded=st.session_state.get('scenario_chat_expanded', False)):
-                    # Display chat history
-                    for role, msg in st.session_state.scenario_chat_history:
-                        if role == "user":
-                            st.markdown(f"**Bạn:** {msg}")
-                        else:
-                            st.markdown(f"**Gemini 3:**\n{msg}")
-                    
-                    # Chat input
-                    q = st.text_input("Đặt câu hỏi về chiến lược:", placeholder="VD: Tại sao Hub 14 được chọn? Rủi ro chính là gì?", key="scenario_chat_input")
-                    col_s, col_c = st.columns([4, 1])
-                    with col_s:
-                        if st.button("📤 Gửi", key="scenario_send"):
-                            if q.strip():
-                                with st.spinner("🧠 Gemini 3 đang suy nghĩ..."):
-                                    ctx = {
-                                        'optimization_results': st.session_state.optimization_results,
-                                        'graph_data': services['loader'].load_region_data(st.session_state.region),
-                                        'period': st.session_state.period,
-                                        'commodity': st.session_state.commodity
-                                    }
-                                    ans = services['gemini'].chat(q.strip(), ctx)
-                                    st.session_state.scenario_chat_history.append(("user", q.strip()))
-                                    st.session_state.scenario_chat_history.append(("assistant", ans))
-                                    st.session_state.scenario_chat_expanded = True
-                                    st.rerun()
-                            else:
-                                st.warning("Vui lòng nhập câu hỏi.")
-                    with col_c:
-                        if st.button("🗑️ Xóa", key="scenario_clear"):
-                            st.session_state.scenario_chat_history = []
-                            st.rerun()
-    
-    with col_right:
+            st.plotly_chart(fig, use_container_width=True, key=f"scenario_map_{st.session_state.period}_{st.session_state.commodity}")
+        if opt_results and not animation_on_map:
+            fig_anim = services['graph'].visualize_network_animated(
+                nodes=graph_data['nodes'],
+                edges=graph_data['edges'],
+                optimization_results=opt_results,
+                commodity=st.session_state.commodity,
+            )
+            if fig_anim:
+                st.markdown("**Đường chuyển động theo cặp OD (commodity)** — bấm ▶ Phát để xem tuyến vẽ dần từ điểm đầu đến điểm cuối.")
+                st.plotly_chart(fig_anim, use_container_width=True, key=f"scenario_animated_{st.session_state.period}_{st.session_state.commodity}")
         st.markdown("""
-        <div class="custom-card">
-            <div class="card-header">🔮 What-If Analysis</div>
-            <div class="card-subheader">Explore Alternate Scenarios (Gemini 3)</div>
+        <div class="gemini-card" style="margin-top: 1.25rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.25rem;">🧠</span>
+                <span class="gemini-header" style="margin-bottom: 0;">Gemini 3 Decision Insights</span>
+            </div>
+            <div style="font-size: 0.9rem; opacity: 0.95;">Strategic reasoning · Graph-based explanation · Risks · Recommended actions</div>
         </div>
         """, unsafe_allow_html=True)
-        
+        if opt_results:
+            insights = opt_results.get('insights', {})
+            if insights:
+                for finding in insights.get('key_findings', []):
+                    is_warning = 'risk' in finding.lower() or '⚠' in finding or 'warning' in finding.lower()
+                    is_action = 'recommend' in finding.lower() or 'mitigation' in finding.lower() or '➜' in finding
+                    if is_warning:
+                        cls, icon = "insight-warning", "⚠"
+                    elif is_action:
+                        cls, icon = "insight-action", "➜"
+                    else:
+                        cls, icon = "insight-item", "✓"
+                    st.markdown(f"""
+                    <div class="{cls}" style="display: flex; align-items: flex-start; gap: 0.5rem;">
+                        <span style="font-size: 1.1rem;">{icon}</span>
+                        <span>{finding}</span>
+                    </div>
+                    """, unsafe_allow_html=True)
+            if st.session_state.get('ask_gemini', False):
+                st.session_state.scenario_chat_expanded = True
+                st.session_state.ask_gemini = False
+            with st.expander("+ Ask more... (Chat with Gemini 3)", expanded=st.session_state.get('scenario_chat_expanded', False)):
+                for role, msg in st.session_state.scenario_chat_history:
+                    if role == "user":
+                        st.markdown(f"<div style='color:rgba(255,255,255,0.95); margin-bottom:0.5rem;'><strong>You:</strong></div>", unsafe_allow_html=True)
+                        st.markdown(msg)
+                    else:
+                        st.markdown(f"<div style='color:rgba(255,255,255,0.95); margin-bottom:0.5rem;'><strong>Gemini 3:</strong></div>", unsafe_allow_html=True)
+                        st.markdown(msg)
+                q = st.text_input("Ask about strategy", placeholder="e.g. Why was Hub 14 chosen? Main risks?", key="scenario_chat_input")
+                col_s, col_c = st.columns([4, 1])
+                with col_s:
+                    if st.button("Send", key="scenario_send"):
+                        if q.strip():
+                            with st.spinner("Thinking..."):
+                                ctx = {
+                                    'optimization_results': st.session_state.optimization_results,
+                                    'graph_data': services['loader'].load_region_data(st.session_state.region),
+                                    'period': st.session_state.period,
+                                    'commodity': st.session_state.commodity
+                                }
+                                ans = services['gemini'].chat(q.strip(), ctx)
+                                st.session_state.scenario_chat_history.append(("user", q.strip()))
+                                st.session_state.scenario_chat_history.append(("assistant", ans))
+                                st.session_state.scenario_chat_expanded = True
+                                st.rerun()
+                        else:
+                            st.warning("Enter a question.")
+                with col_c:
+                    if st.button("Clear", key="scenario_clear"):
+                        st.session_state.scenario_chat_history = []
+                        st.rerun()
+
+    with col_right:
+        st.markdown("""
+        <div style="background: rgba(248,250,252,0.98); padding: 1.25rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin-bottom: 1rem;">
+            <div style="font-size: 1.1rem; font-weight: 600; color: #1e293b;">What-If Analysis</div>
+            <div style="font-size: 0.85rem; color: #64748b; margin-top: 0.25rem;">Explore alternate scenarios (Gemini 3)</div>
+        </div>
+        """, unsafe_allow_html=True)
         scenario_type = st.selectbox(
             "Scenario Type",
             options=["Increase Switching Cost", "Demand Shock", "Delay Hub Upgrade", "Capacity Reduction"],
-            index=0
+            index=0,
+            key="whatif_type"
         )
-        
+        _opt_label = f"Optimal ({st.session_state.commodity})" if st.session_state.commodity else "Optimal Route"
+        st.markdown(f"""
+        <div id="map-legend-box" class="map-legend-box" style="background: #f1f5f9; padding: 0.75rem 1rem; border-radius: 8px; margin: 0.5rem 0; font-size: 0.85rem; border: 1px solid #e2e8f0;">
+            <p style="margin: 0 0 0.4rem 0; font-weight: 600;">Chú thích bản đồ</p>
+            <p style="margin: 0.25rem 0;"><span style="color: #78350f;">━━</span> Đường bộ (hiện có) &nbsp; <span style="color: #b45309;">╌╌</span> Đường bộ (dự án)</p>
+            <p style="margin: 0.25rem 0;"><span style="color: #0369a1;">━━</span> Đường thủy (hiện có) &nbsp; <span style="color: #0ea5e9;">╌╌</span> Đường thủy (dự án)</p>
+            <p style="margin: 0.25rem 0;"><span style="color: #27ae60;">━━</span> {_opt_label}</p>
+            <p style="margin: 0.25rem 0;"><span style="color: #16a34a;">●</span> Hub Mới &nbsp; <span style="color: #7c3aed;">●</span> Hub Nâng cấp &nbsp; <span style="color: #ea580c;">●</span> Hub Hiện có &nbsp; <span style="color: #2563eb;">●</span> Node thường</p>
+        </div>
+        """, unsafe_allow_html=True)
         if scenario_type == "Increase Switching Cost":
-            impact_value = st.slider("Increase Switching Cost", 2, 3, 2, 1)
+            impact_value = st.slider("Increase Switching Cost", 2, 3, 2, 1, key="whatif_sw")
         elif scenario_type == "Demand Shock":
-            impact_value = st.slider("Demand Change (%)", -50, 100, 20, 10)
+            impact_value = st.slider("Demand Change (%)", -50, 100, 20, 10, key="whatif_dem")
         elif scenario_type == "Delay Hub Upgrade":
-            impact_value = st.slider("Delay (periods)", 1, 4, 1)
+            impact_value = st.slider("Delay (periods)", 1, 4, 1, key="whatif_del")
         else:
-            impact_value = st.slider("Capacity Reduction (%)", 10, 50, 20, 5)
-        
-        if st.button("Run What-If Analysis", type="primary", use_container_width=True):
+            impact_value = st.slider("Capacity Reduction (%)", 10, 50, 20, 5, key="whatif_cap")
+        if st.button("Run What-If Analysis", type="primary", use_container_width=True, key="btn_whatif"):
             if st.session_state.optimization_results:
-                with st.spinner("🧠 Gemini 3 is reasoning..."):
+                with st.spinner("Gemini 3 reasoning..."):
                     whatif_result = services['gemini'].whatif_analysis(
                         scenario_type=scenario_type,
                         impact_value=impact_value,
@@ -540,52 +502,37 @@ with tab1:
                         graph_data=services['loader'].load_region_data(region),
                         commodity=commodity
                     )
-                
-                st.markdown("""
-                <div style="margin-top: 1rem;">
-                    <h4 style="color: #3498db;">Gemini 3 predicts:</h4>
-                </div>
-                """, unsafe_allow_html=True)
-                
+                st.markdown("""<div style="margin-top: 1rem; color: rgba(255,255,255,0.95);"><strong>Gemini 3 predicts:</strong></div>""", unsafe_allow_html=True)
                 for item in whatif_result.get('affected_items', []):
                     st.markdown(f"""
-                    <div style="padding: 0.5rem; margin: 0.25rem 0; background: #e8f5e9; border-radius: 6px;">
+                    <div class="insight-item" style="padding: 0.5rem 0.75rem; margin: 0.35rem 0;">
                         ✓ {item}
                     </div>
                     """, unsafe_allow_html=True)
-                
-                st.markdown("""
-                <div style="margin-top: 1rem;">
-                    <h4 style="color: #27ae60;">Suggested mitigation:</h4>
-                </div>
-                """, unsafe_allow_html=True)
-                
+                st.markdown("""<div style="margin-top: 1rem; color: rgba(255,255,255,0.95);"><strong>Suggested mitigation:</strong></div>""", unsafe_allow_html=True)
                 for suggestion in whatif_result.get('mitigation', []):
                     st.markdown(f"""
-                    <div style="padding: 0.5rem; margin: 0.25rem 0; background: #fff3e0; border-radius: 6px;">
-                        • {suggestion}
+                    <div class="insight-action" style="padding: 0.5rem 0.75rem; margin: 0.35rem 0;">
+                        ➜ {suggestion}
                     </div>
                     """, unsafe_allow_html=True)
-    
+            else:
+                st.warning("Run Scenario first.")
+
     # Auto-load data when region/period changes
     if 'last_region' not in st.session_state or st.session_state.last_region != st.session_state.region or 'last_period' not in st.session_state or st.session_state.last_period != st.session_state.period:
         st.session_state.last_region = st.session_state.region
         st.session_state.last_period = st.session_state.period
-        with st.spinner("🔍 Loading regional data..."):
+        with st.spinner("Loading regional data..."):
             data = services['loader'].load_region_data(st.session_state.region)
             st.session_state.region_data = data
-            
-            # Load optimization results
             opt_results = services['loader'].load_optimization_results(st.session_state.region, st.session_state.period)
             if opt_results:
                 st.session_state.optimization_results = opt_results
             else:
-                # If no results found, try to load from period 1 as fallback
                 opt_results = services['loader'].load_optimization_results(st.session_state.region, 1)
                 if opt_results:
                     st.session_state.optimization_results = opt_results
-            
-            # Normalize with Gemini
             normalization_result = services['gemini'].normalize_data(
                 nodes=data['nodes'],
                 edges=data['edges'],
@@ -594,131 +541,100 @@ with tab1:
             st.session_state.normalized_data = normalization_result
 
 # ============================================================================
-# TAB 2: NETWORK VISUALIZATION
+# TAB: NETWORK (full map + metrics)
 # ============================================================================
-with tab2:
+with tab_network:
     st.markdown("<br>", unsafe_allow_html=True)
-    
     if st.session_state.optimization_results:
         st.markdown("""
         <div class="custom-card">
-            <div class="card-header">
-                🗺️ Network Visualization & Optimization Results
-            </div>
-            <div class="card-subheader">
-                Interactive graph showing optimal routes and hub selection
-            </div>
+            <div class="card-header">Network Visualization & Optimization Results</div>
+            <div class="card-subheader">Interactive graph · optimal routes and hub selection</div>
         </div>
         """, unsafe_allow_html=True)
-        
-        col1, col2 = st.columns([2, 1])
-        
-        with col1:
-            # Build interactive graph with Plotly or real map
+        col_n1, col_n2 = st.columns([2, 1])
+        with col_n1:
             graph_data = services['loader'].load_region_data(st.session_state.region)
             opt_results = st.session_state.optimization_results
-            
-            use_real_map_net = st.checkbox(
-                "🗺️ Bản đồ thực tế",
-                value=True,
-                key="network_map_toggle"
-            )
-            
-            if use_real_map_net and _HAS_STREAMLIT_FOLIUM:
+            use_osm_net = st.checkbox("Show map (OpenStreetMap)", value=True, key="net_osm")
+            net_animation_on_map = False
+            if _HAS_STREAMLIT_FOLIUM:
                 folium_map = services['graph'].visualize_network_map(
-                    nodes=graph_data['nodes'],
-                    edges=graph_data['edges'],
-                    optimization_results=opt_results,
-                    highlight_paths=True,
-                    commodity=st.session_state.commodity
+                    nodes=graph_data['nodes'], edges=graph_data['edges'],
+                    optimization_results=opt_results, highlight_paths=True,
+                    commodity=st.session_state.commodity, use_osm_tiles=use_osm_net
                 )
                 if folium_map:
-                    st_folium(folium_map, width=None, height=500, key="network_folium_map")
+                    st_folium(folium_map, width=None, height=500, key="net_folium")
+                    st.caption("Dùng **thanh thời gian** dưới bản đồ để xem đường optimal vẽ dần từ đầu đến cuối.")
+                    net_animation_on_map = True
                 else:
                     fig = services['graph'].visualize_network_interactive(
                         nodes=graph_data['nodes'], edges=graph_data['edges'],
                         optimization_results=opt_results, highlight_paths=True,
                         commodity=st.session_state.commodity
                     )
-                    st.plotly_chart(fig, use_container_width=True, key="network_map")
+                    st.plotly_chart(fig, use_container_width=True, key="net_plotly")
             else:
                 fig = services['graph'].visualize_network_interactive(
-                    nodes=graph_data['nodes'],
-                    edges=graph_data['edges'],
-                    optimization_results=opt_results,
-                    highlight_paths=True,
+                    nodes=graph_data['nodes'], edges=graph_data['edges'],
+                    optimization_results=opt_results, highlight_paths=True,
                     commodity=st.session_state.commodity
                 )
-                st.plotly_chart(fig, use_container_width=True, key="network_map")
-        
-        with col2:
-            st.markdown("<div style='padding: 1rem;'>", unsafe_allow_html=True)
-            
-            # Key Metrics with beautiful cards
+                st.plotly_chart(fig, use_container_width=True, key="net_plotly")
+            if not net_animation_on_map:
+                fig_anim = services['graph'].visualize_network_animated(
+                    nodes=graph_data['nodes'], edges=graph_data['edges'],
+                    optimization_results=opt_results,
+                    commodity=st.session_state.commodity,
+                )
+                if fig_anim:
+                    st.markdown("**Đường chuyển động theo cặp OD** — ▶ Phát để xem tuyến vẽ dần.")
+                    st.plotly_chart(fig_anim, use_container_width=True, key="net_animated")
+        with col_n2:
             results = st.session_state.optimization_results
-            
             st.markdown("""
-            <div class="metric-card" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); color: white; margin-bottom: 1rem;">
+            <div class="metric-card" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; margin-bottom: 1rem;">
                 <div class="metric-value" style="color: white;">${:,.0f}</div>
                 <div class="metric-label" style="color: rgba(255,255,255,0.9);">Total Cost</div>
             </div>
             """.format(results.get('total_cost', 0)), unsafe_allow_html=True)
-            
             st.markdown("""
-            <div class="metric-card" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; margin-bottom: 1rem;">
+            <div class="metric-card" style="background: linear-gradient(135deg, #0e7490 0%, #06b6d4 100%); color: white; margin-bottom: 1rem;">
                 <div class="metric-value" style="color: white;">{:.1f} days</div>
                 <div class="metric-label" style="color: rgba(255,255,255,0.9);">Total Time</div>
             </div>
             """.format(results.get('total_time', 0)), unsafe_allow_html=True)
-            
             st.markdown("""
-            <div class="metric-card" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); color: white; margin-bottom: 1rem;">
+            <div class="metric-card" style="background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%); color: white; margin-bottom: 1rem;">
                 <div class="metric-value" style="color: white;">{}</div>
                 <div class="metric-label" style="color: rgba(255,255,255,0.9);">Hubs Selected</div>
             </div>
             """.format(results.get('num_hubs', 0)), unsafe_allow_html=True)
-            
-            st.markdown("""
-            <div class="metric-card" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); color: white; margin-bottom: 1rem;">
-                <div class="metric-value" style="color: white;">{:.1%}</div>
-                <div class="metric-label" style="color: rgba(255,255,255,0.9);">Flow Efficiency</div>
-            </div>
-            """.format(results.get('efficiency', 0)), unsafe_allow_html=True)
-            
-            st.markdown("**🛣️ Top Routes:**", unsafe_allow_html=True)
             for i, route in enumerate(results.get('top_routes', [])[:3], 1):
                 st.markdown(f"""
-                <div style="background: #f8f9fa; padding: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem; border-left: 3px solid #667eea;">
-                    <strong>Route {i}:</strong> {' → '.join(map(str, route['path']))}<br>
-                    <small>Mode: {route['mode']} | Cost: ${route['cost']:,.0f}</small>
+                <div class="network-route-card" style="background: #f8fafc; padding: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem; border-left: 3px solid #06b6d4;">
+                    <strong>Route {i}:</strong> {' → '.join(map(str, route.get('path', [])))}<br>
+                    <span class="network-route-mode">Mode: {route.get('mode', '')} | Cost: ${route.get('cost', 0):,.0f}</span>
                 </div>
                 """, unsafe_allow_html=True)
-            
-            st.markdown("</div>", unsafe_allow_html=True)
     else:
-        st.info("⚠️ Please load optimization results first in the Scenario tab.", icon="ℹ️")
+        st.info("Load optimization results in the Scenario tab first.")
 
 # ============================================================================
-# TAB 3: EXPLANATION
+# TAB: EXPLANATION (Gemini explain strategy + chat)
 # ============================================================================
-with tab3:
+with tab_explanation:
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("""
     <div class="gemini-card">
-        <div class="gemini-header">
-            🧠 Gemini 3 Decision Insights
-        </div>
-        <div style="font-size: 1rem; opacity: 0.9;">
-            AI-powered strategic analysis and graph-based reasoning
-        </div>
+        <div class="gemini-header">Gemini 3 Decision Insights</div>
+        <div style="font-size: 1rem; opacity: 0.95;">AI-powered strategic analysis and graph-based reasoning</div>
     </div>
     """, unsafe_allow_html=True)
-
-    # Auto-trigger if button was clicked in banner
     if st.session_state.get('ask_gemini', False) and st.session_state.optimization_results:
         st.session_state.ask_gemini = False
-        # Auto-run explanation
-        with st.spinner("🧠 Gemini 3 is analyzing the optimization strategy..."):
+        with st.spinner("Gemini 3 is analyzing..."):
             explanation = services['gemini'].explain_strategy(
                 period=st.session_state.period,
                 commodity=st.session_state.commodity,
@@ -727,23 +643,13 @@ with tab3:
                 priority=st.session_state.priority
             )
             st.session_state.explanation_result = explanation
-    
-    # Check if we should auto-run explanation (from banner button)
-    should_show_explanation = False
-    if st.session_state.get('ask_gemini', False) and st.session_state.optimization_results:
-        should_show_explanation = True
-        st.session_state.ask_gemini = False
-    
-    clicked_explain = st.button("✨ Ask Gemini 3 to Explain Strategy", type="primary", disabled=not st.session_state.optimization_results, use_container_width=True)
+    clicked_explain = st.button("Ask Gemini 3 to Explain Strategy", type="primary", disabled=not st.session_state.optimization_results, use_container_width=True, key="btn_explain")
     has_explanation = bool(st.session_state.get('explanation_result'))
-    
-    # Show explanation + chat when: clicked explain, or have cached explanation (e.g. after Send rerun)
-    if (clicked_explain or should_show_explanation or has_explanation) and st.session_state.optimization_results:
-        # Use cached explanation if available (e.g. after Send rerun); generate when user clicked Explain
-        if has_explanation and not clicked_explain and not should_show_explanation:
+    if (clicked_explain or has_explanation) and st.session_state.optimization_results:
+        if has_explanation and not clicked_explain:
             explanation = st.session_state.explanation_result
         else:
-            with st.spinner("🧠 Gemini 3 is analyzing the optimization strategy..."):
+            with st.spinner("Gemini 3 is analyzing..."):
                 explanation = services['gemini'].explain_strategy(
                     period=st.session_state.period,
                     commodity=st.session_state.commodity,
@@ -752,245 +658,111 @@ with tab3:
                     priority=st.session_state.priority
                 )
                 st.session_state.explanation_result = explanation
-        
-        # Display explanation in beautiful format
-        st.markdown("""
-        <div class="custom-card" style="background: linear-gradient(135deg, #f6f8fb 0%, #ffffff 100%);">
-            <h3 style="color: #667eea; margin-bottom: 1rem;">📋 Strategic Overview</h3>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("""<div class="custom-card"><h3 style="color: #0e7490;">Strategic Overview</h3></div>""", unsafe_allow_html=True)
         st.markdown(explanation['strategy_summary'])
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("""
-            <div class="custom-card">
-                <h3 style="color: #3498db; margin-bottom: 1rem;">🎯 Why This Strategy?</h3>
-            </div>
-            """, unsafe_allow_html=True)
+        col_e1, col_e2 = st.columns(2)
+        with col_e1:
+            st.markdown("""<div class="custom-card"><h3 style="color: #0e7490;">Why This Strategy?</h3></div>""", unsafe_allow_html=True)
             st.markdown(explanation['reasoning'])
-            
-            st.markdown("<br>", unsafe_allow_html=True)
-            
-            st.markdown("""
-            <div class="custom-card" style="background: linear-gradient(135deg, #ffe8e8 0%, #fff5f5 100%);">
-                <h3 style="color: #e74c3c; margin-bottom: 1rem;">⚠️ Bottlenecks & Risks</h3>
-            </div>
-            """, unsafe_allow_html=True)
-            for risk in explanation['risks']:
-                st.markdown(f"""
-                <div class="risk-item" style="background: white; padding: 1rem; margin: 0.5rem 0; border-radius: 8px; border-left: 4px solid #e74c3c;">
-                    {risk}
-                </div>
-                """, unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown("""
-            <div class="custom-card">
-                <h3 style="color: #9b59b6; margin-bottom: 1rem;">📊 Graph-Based Insights</h3>
-            </div>
-            """, unsafe_allow_html=True)
-            st.markdown(explanation['graph_insights'])
-            
-            st.markdown("<br>", unsafe_allow_html=True)
-            
-            st.markdown("""
-            <div class="custom-card" style="background: linear-gradient(135deg, #e8f8f5 0%, #f0fdf7 100%);">
-                <h3 style="color: #27ae60; margin-bottom: 1rem;">💡 Recommended Actions</h3>
-            </div>
-            """, unsafe_allow_html=True)
-            for action in explanation['recommendations']:
-                st.markdown(f"""
-                <div class="action-item" style="background: white; padding: 1rem; margin: 0.5rem 0; border-radius: 8px; border-left: 4px solid #27ae60;">
-                    ✓ {action}
-                </div>
-                """, unsafe_allow_html=True)
-        
-        # Chat with Gemini section
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("""
-        <div class="custom-card" style="background: linear-gradient(135deg, #e8eaf6 0%, #f3f4f6 100%);">
-            <h3 style="color: #667eea; margin-bottom: 1rem;">💬 Chat with Gemini</h3>
-            <p style="color: #7f8c8d;">Ask follow-up questions to understand the strategy better</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Initialize chat history
+            st.markdown("""<div class="custom-card"><h3 style="color: #ca8a04;">Bottlenecks & Risks</h3></div>""", unsafe_allow_html=True)
+            for risk in explanation.get('risks', []):
+                st.markdown(f"""<div class="insight-warning">{risk}</div>""", unsafe_allow_html=True)
+        with col_e2:
+            st.markdown("""<div class="custom-card"><h3 style="color: #0e7490;">Graph-Based Insights</h3></div>""", unsafe_allow_html=True)
+            st.markdown(explanation.get('graph_insights', ''))
+            st.markdown("""<div class="custom-card"><h3 style="color: #166534;">Recommended Actions</h3></div>""", unsafe_allow_html=True)
+            for action in explanation.get('recommendations', []):
+                st.markdown(f"""<div class="insight-item">✓ {action}</div>""", unsafe_allow_html=True)
         if 'chat_history' not in st.session_state:
             st.session_state.chat_history = []
-        
-        # Display chat history
-        chat_container = st.container()
-        with chat_container:
-            for i, (role, message) in enumerate(st.session_state.chat_history):
-                if role == "user":
-                    st.markdown(f"""
-                    <div style="background: #667eea; color: white; padding: 0.75rem; border-radius: 10px; margin-bottom: 0.5rem; text-align: right;">
-                        <strong>You:</strong> {message}
-                    </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    st.markdown(f"""
-                    <div style="background: #f0f0f0; padding: 0.75rem; border-radius: 10px; margin-bottom: 0.5rem;">
-                        <strong>Gemini:</strong> {message}
-                    </div>
-                    """, unsafe_allow_html=True)
-        
-        # Chat input
-        user_question = st.text_input(
-            "Ask Gemini a question:",
-            placeholder="e.g., Why was Hub 7 selected? What are the risks?",
-            key="chat_input"
-        )
-        
-        col_send, col_clear = st.columns([4, 1])
+        st.markdown("""<div class="custom-card"><h3 style="color: #0e7490;">Chat with Gemini</h3></div>""", unsafe_allow_html=True)
+        for role, msg in st.session_state.chat_history:
+            if role == "user":
+                st.markdown(f"""<div class="insight-action" style="text-align: right;"><strong>You:</strong></div>""", unsafe_allow_html=True)
+                st.markdown(msg)
+            else:
+                st.markdown(f"""<div class="insight-item"><strong>Gemini:</strong></div>""", unsafe_allow_html=True)
+                st.markdown(msg)
+        user_q = st.text_input("Ask Gemini", placeholder="e.g. Why was Hub 7 selected?", key="exp_chat_input")
+        col_send, col_cl = st.columns([4, 1])
         with col_send:
-            if st.button("💬 Send", type="primary", use_container_width=True):
-                if user_question and st.session_state.optimization_results:
-                    with st.spinner("🧠 Gemini is thinking..."):
-                        # Prepare context
-                        context = {
+            if st.button("Send", key="exp_send"):
+                if user_q and st.session_state.optimization_results:
+                    with st.spinner("Thinking..."):
+                        resp = services['gemini'].chat(user_q, {
                             'optimization_results': st.session_state.optimization_results,
                             'graph_data': services['loader'].load_region_data(st.session_state.region),
                             'period': st.session_state.period,
                             'commodity': st.session_state.commodity
-                        }
-                        
-                        # Get response from Gemini
-                        response = services['gemini'].chat(user_question, context)
-                        
-                        # Add to chat history
-                        st.session_state.chat_history.append(("user", user_question))
-                        st.session_state.chat_history.append(("assistant", response))
-                        
+                        })
+                        st.session_state.chat_history.append(("user", user_q))
+                        st.session_state.chat_history.append(("assistant", resp))
                         st.rerun()
-                elif not st.session_state.optimization_results:
-                    st.warning("⚠️ Please load optimization results first!")
-        
-        with col_clear:
-            if st.button("🗑️ Clear", use_container_width=True):
+        with col_cl:
+            if st.button("Clear", key="exp_clear"):
                 st.session_state.chat_history = []
                 st.rerun()
     else:
         if not st.session_state.optimization_results:
-            st.info("⚠️ Please load optimization results first in the Scenario tab.", icon="ℹ️")
+            st.info("Load optimization results in the Scenario tab first.")
 
 # ============================================================================
-# TAB 4: WHAT-IF ANALYSIS
+# TAB: WHAT-IF (full what-if page)
 # ============================================================================
-with tab4:
+with tab_whatif:
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("""
     <div class="gemini-card">
-        <div class="gemini-header">
-            🔮 Gemini 3 What-If Analysis
-        </div>
-        <div style="font-size: 1rem; opacity: 0.9;">
-            Explore alternate scenarios with instant AI predictions (no re-optimization needed)
-        </div>
+        <div class="gemini-header">What-If Analysis</div>
+        <div style="font-size: 1rem; opacity: 0.95;">Explore alternate scenarios with AI predictions</div>
     </div>
     """, unsafe_allow_html=True)
-
-    col1, col2 = st.columns([1, 2])
-
-    with col1:
-        st.markdown("""
-        <div class="custom-card">
-            <h4 style="color: #667eea; margin-bottom: 1rem;">Scenario Parameters</h4>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        scenario_type = st.selectbox(
-            "📋 Scenario Type",
-            options=[
-                "Increase Switching Cost",
-                "Demand Shock",
-                "Delay Hub Upgrade",
-                "Capacity Reduction"
-            ]
-        )
-        
-        if scenario_type == "Increase Switching Cost":
-            impact_value = st.slider("Cost Increase (%)", 10, 200, 50, 10)
-        elif scenario_type == "Demand Shock":
-            impact_value = st.slider("Demand Change (%)", -50, 100, 20, 10)
-        elif scenario_type == "Delay Hub Upgrade":
-            impact_value = st.slider("Delay (periods)", 1, 4, 1)
+    col_w1, col_w2 = st.columns([1, 2])
+    with col_w1:
+        scenario_type_w = st.selectbox("Scenario Type", options=["Increase Switching Cost", "Demand Shock", "Delay Hub Upgrade", "Capacity Reduction"], key="whatif_tab_type")
+        if scenario_type_w == "Increase Switching Cost":
+            impact_w = st.slider("Cost Increase (%)", 10, 200, 50, 10, key="whatif_tab_sw")
+        elif scenario_type_w == "Demand Shock":
+            impact_w = st.slider("Demand Change (%)", -50, 100, 20, 10, key="whatif_tab_dem")
+        elif scenario_type_w == "Delay Hub Upgrade":
+            impact_w = st.slider("Delay (periods)", 1, 4, 1, key="whatif_tab_del")
         else:
-            impact_value = st.slider("Capacity Reduction (%)", 10, 50, 20, 5)
-        
-        run_whatif = st.button("🔮 Run What-If Analysis", type="primary", use_container_width=True)
-
-    with col2:
-        if run_whatif and st.session_state.optimization_results:
-            with st.spinner("🧠 Gemini 3 is reasoning about scenario impact..."):
-                whatif_result = services['gemini'].whatif_analysis(
-                    scenario_type=scenario_type,
-                    impact_value=impact_value,
+            impact_w = st.slider("Capacity Reduction (%)", 10, 50, 20, 5, key="whatif_tab_cap")
+        run_w = st.button("Run What-If Analysis", type="primary", use_container_width=True, key="btn_whatif_tab")
+    with col_w2:
+        if run_w and st.session_state.optimization_results:
+            with st.spinner("Gemini 3 reasoning..."):
+                whatif_r = services['gemini'].whatif_analysis(
+                    scenario_type=scenario_type_w,
+                    impact_value=impact_w,
                     current_results=st.session_state.optimization_results,
                     graph_data=services['loader'].load_region_data(st.session_state.region),
                     commodity=st.session_state.commodity
                 )
-            
-            st.markdown("""
-            <div class="custom-card" style="background: linear-gradient(135deg, #e8eaf6 0%, #f3f4f6 100%);">
-                <h3 style="color: #667eea; margin-bottom: 1rem;">🔮 Scenario Impact Analysis</h3>
+            _desc = (whatif_r.get('scenario_description', '') or '').replace('<', '&lt;').replace('>', '&gt;')
+            st.markdown(f"""
+            <div style="background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.98); padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                <strong>Scenario:</strong> {_desc}
             </div>
             """, unsafe_allow_html=True)
-            
-            st.info(f"**Scenario:** {whatif_result['scenario_description']}", icon="📋")
-            
-            st.markdown("""
-            <div class="custom-card">
-                <h4 style="color: #3498db; margin-bottom: 1rem;">Expected Impact</h4>
-            </div>
-            """, unsafe_allow_html=True)
-            st.markdown(whatif_result['expected_impact'])
-            
-            st.markdown("""
-            <div class="custom-card" style="background: linear-gradient(135deg, #fff3e0 0%, #fffbf0 100%);">
-                <h4 style="color: #f39c12; margin-bottom: 1rem;">Affected Routes & Commodities</h4>
-            </div>
-            """, unsafe_allow_html=True)
-            for item in whatif_result['affected_items']:
-                st.markdown(f"""
-                <div style="background: white; padding: 0.75rem; margin: 0.5rem 0; border-radius: 8px; border-left: 3px solid #f39c12;">
-                    ⚡ {item}
-                </div>
-                """, unsafe_allow_html=True)
-            
-            st.markdown("""
-            <div class="custom-card" style="background: linear-gradient(135deg, #e8f5e9 0%, #f1f8f4 100%);">
-                <h4 style="color: #27ae60; margin-bottom: 1rem;">Mitigation Strategies</h4>
-            </div>
-            """, unsafe_allow_html=True)
-            for suggestion in whatif_result['mitigation']:
-                st.markdown(f"""
-                <div style="background: white; padding: 0.75rem; margin: 0.5rem 0; border-radius: 8px; border-left: 3px solid #27ae60;">
-                    ✓ {suggestion}
-                </div>
-                """, unsafe_allow_html=True)
+            st.markdown("""<div class="custom-card" style="color: #1e293b;"><strong>Expected Impact</strong></div>""", unsafe_allow_html=True)
+            st.markdown(whatif_r.get('expected_impact', ''))
+            st.markdown("""<div class="custom-card" style="color: #1e293b;"><strong>Affected Routes</strong></div>""", unsafe_allow_html=True)
+            for item in whatif_r.get('affected_items', []):
+                st.markdown(f"""<div class="insight-warning">⚡ {item}</div>""", unsafe_allow_html=True)
+            st.markdown("""<div class="custom-card" style="color: #1e293b;"><strong>Mitigation</strong></div>""", unsafe_allow_html=True)
+            for s in whatif_r.get('mitigation', []):
+                st.markdown(f"""<div class="insight-item">✓ {s}</div>""", unsafe_allow_html=True)
         elif not st.session_state.optimization_results:
-            st.info("⚠️ Please load optimization results first in the Scenario tab.", icon="ℹ️")
+            st.info("Load optimization results in the Scenario tab first.")
 
 # ============================================================================
 # FOOTER
 # ============================================================================
 st.markdown("<br><br>", unsafe_allow_html=True)
 st.markdown("""
-<div style="text-align: center; padding: 2rem; background: rgba(255,255,255,0.1); border-radius: 15px;">
-    <div style="font-size: 1.5rem; font-weight: 600; color: white; margin-bottom: 0.5rem;">
-        Graph-Aware Logistics Planner
-    </div>
-    <div style="color: rgba(255,255,255,0.8); margin-bottom: 1rem;">
-        Powered by Gemini 3 | Built for Hackathon Demo
-    </div>
-    <div style="font-style: italic; color: rgba(255,255,255,0.7); font-size: 1.1rem;">
-        "If Gemini 3 is removed, the app loses its decision-making capability.<br>
-        If optimization is removed, the app loses its credibility."
-    </div>
+<div style="text-align: center; padding: 1.5rem; background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+    <div style="font-size: 1.2rem; font-weight: 600; color: rgba(255,255,255,0.95);">Graph-Aware Logistics Planner</div>
+    <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">Powered by Gemini 3 · Decision Intelligence Platform</div>
 </div>
 """, unsafe_allow_html=True)

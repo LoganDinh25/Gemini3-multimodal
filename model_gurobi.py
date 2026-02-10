@@ -951,7 +951,7 @@ if Path(paths_pkl).exists():
     # Skip tính toán paths, đi thẳng đến phần sau
     skip_path_calculation = True
 
-EPSILON = 0.5   # Khớp với notebook mẫu (Data Model _ 2026-Feb_05_eps_05.ipynb)
+EPSILON = 0.25   # Khớp với notebook mẫu (Data Model _ 2026-Feb_05_eps_05.ipynb)
 MAX_PATHS_PER_OD = 5000
 
 if not skip_path_calculation:
@@ -1452,16 +1452,24 @@ from gurobipy import GRB
 # ------------------------------------------------
 # 0) COST PARAMETERS (general)
 # ------------------------------------------------
-# Mode switching cost at hub
+# Mode switching cost at hub (theo Data Model _ 2026-Feb_05-Eps_02.ipynb)
 c_s = 500
 
 # Service cost at hubs
 # Tạo dictionary c_h cho TẤT CẢ hubs trong H với giá trị mặc định
-c_h = {h: 1000 for h in H}  # Tất cả hub có service cost = 1
+c_h = {h: 1000 for h in H}
+
+# Định nghĩa budget cho từng period (theo Data Model _ 2026-Feb_05-Eps_02.ipynb)
+B = {
+    1: 200_000_000_000_000_000_000,
+    2: 250_000_000_000_000_000_000,
+    3: 350_000_000_000_000_000_000,
+}
 
 print("\n=== COST PARAMETERS ===")
 print(f"  Mode switching cost c_s = {c_s}")
-print(f"  Service cost c_h (cho tất cả {len(H)} hubs): đều = 1")
+print(f"  Service cost c_h (cho tất cả {len(H)} hubs): đều = 1000")
+print(f"  Budget B theo period: {B}")
 
 
 # ------------------------------------------------
@@ -1667,15 +1675,15 @@ for through_arc, real_arc in upgrade_dependencies.items():
 
 
 # ============================================
-# 6) TRANSPORTATION DEMAND - VỚI BASE_DEMAND = 1,000,000
+# 6) TRANSPORTATION DEMAND
 # ============================================
-print("\n[5] THIẾT LẬP NHU CẦU VẬN TẢI (base demand = 1,000,000)")
+print("\n[5] THIẾT LẬP NHU CẦU VẬN TẢI")
 
 # Tạo w_gk dựa trên OD_pairs
 w_gk = {}
 T_list = list(T)  # Đảm bảo T là iterable
 
-# Base demand lớn = 1,000,000 như bạn yêu cầu
+# Base demand mỗi commodity (theo Data Model _ 2026-Feb_05-Eps_02.ipynb)
 BASE_DEMAND = 10_000
 
 # Nếu có growth_factor, tính demand tăng dần theo thời gian
@@ -1985,15 +1993,7 @@ for g, od_pairs_list in OD_pairs.items():
 
 mode_switch_cost = gp.quicksum(mode_switch_terms)
 
-# 8.4 Total cost
-print("\n[6] Tổng chi phí (total cost):")
-total_cost = service_cost + transport_cost  + mode_switch_cost 
-model.setObjective(total_cost, GRB.MINIMIZE)
-print("✓ Đã thiết lập hàm mục tiêu: Minimize tổng chi phí")
-print(f"\n  Thành phần chi phí:")
-print(f"  - Transportation cost:      biến số trong objective")
-print(f"  - Hub service cost:         biến số trong objective")
-print(f"  - Mode switching cost:      biến số trong objective")
+# 8.4 Total cost sẽ được thiết lập sau khi có hub_upgrade_cost và arc_upgrade_cost (bên dưới)
 
 
 
@@ -2014,11 +2014,7 @@ for h in new_hubs:  # [3]
                     cost_per_unit = f_lh.get(l, 0)
                     hub_upgrade_cost += y_h[(h, l, t)] * capacity_increase * cost_per_unit
                 else:
-                    # Nếu không có level này, bỏ qua hoặc xử lý
                     print(f"  [WARNING] Hub {h} không có level {l} trong L_h")
-                capacity_increase = L_h[h][l] - L_h[h][0]  # 0 ở đây là 0
-                cost_per_unit = f_lh.get(l, 0)
-                hub_upgrade_cost += y_h[(h, l, t)] * capacity_increase * cost_per_unit
         else:
             # Period t: Chi phí nâng cấp từ period t-1
             for l in [1, 2, 3]:
@@ -2126,7 +2122,13 @@ for a in A_tilde:
             arc_upgrade_cost += arc_upgrade_indicator * capacity_increase * cost_per_unit
 
 print(f"  ✓ Đã tính chi phí nâng cấp cho {len(A_tilde)} potential arcs")
-print(f"  - Hub upgrade cost:         biến số trong objective")
+
+# 8.6 Hàm mục tiêu: CHỈ operating cost (theo notebook – investment bị ràng buộc bởi budget B[t])
+print("\n[6] Tổng chi phí (total cost) – chỉ operating:")
+total_cost = service_cost + transport_cost + mode_switch_cost
+model.setObjective(total_cost, GRB.MINIMIZE)
+print("✓ Đã thiết lập hàm mục tiêu: Minimize operating cost (service + transport + mode_switch)")
+print(f"  - Hub/Arc upgrade KHÔNG trong objective – ràng buộc bởi budget B[t] từng period")
 
 # ============================================
 # 9. THIẾT LẬP RÀNG BUỘC (CRITICAL - THIẾU SẼ RA KẾT QUẢ 0)
@@ -2149,6 +2151,77 @@ for g, od_pairs_list in OD_pairs.items():
             )
             path_flow_count += 1
 print(f"  ✓ Đã thêm {path_flow_count} ràng buộc path flow balance")
+
+# 9.1b Luồng qua hub: u_hub[(h,t)] >= tổng demand đi qua hub h trong period t (để hub service cost phản ánh đúng)
+def path_uses_hub(path, h):
+    """True nếu path đi qua hub h (node h xuất hiện trong path dưới dạng h hoặc 'h^1', 'h^2', ...)."""
+    for (u, v) in path:
+        if physical_node(u) == h or physical_node(v) == h:
+            return True
+    return False
+
+print("\n[1b] Định nghĩa u_hub = luồng qua hub (hub service cost):")
+for h in H:
+    for t in T:
+        flow_through_h = gp.quicksum(
+            w_gk[(g, od, t)] * v_path[(g, od, idx, t)]
+            for g, od_list in OD_pairs.items()
+            for od in od_list
+            for idx in range(len(paths[(g, od)]))
+            if path_uses_hub(paths[(g, od)][idx], h)
+        )
+        model.addConstr(u_hub[(h, t)] == flow_through_h, name=f"u_hub_{h}_t{t}_flow")
+print(f"  ✓ Đã thêm ràng buộc u_hub = flow qua hub")
+
+# 9.1c Ràng buộc capacity tại hub (bắt buộc nâng cấp khi luồng vượt capacity – theo notebook)
+print("\n[1c] Capacity tại hub (u_hub ≤ capacity theo level):")
+M_big_hub = 1e9
+for h in new_hubs:
+    for t in T:
+        model.addConstr(
+            u_hub[(h, t)] <= gp.quicksum(L_h[h][l] * y_h[(h, l, t)] for l in [0, 1, 2, 3] if (h, l, t) in y_h),
+            name=f"new_hub_capacity_{h}_t{t}"
+        )
+        model.addConstr(
+            u_hub[(h, t)] <= M_big_hub * (1 - y_h[(h, 0, t)]),
+            name=f"new_hub_no_flow_if_closed_{h}_t{t}"
+        )
+for h in H_tilde:
+    for t in T:
+        model.addConstr(
+            u_hub[(h, t)] <= gp.quicksum(L_h[h][l] * y_h[(h, l, t)] for l in [0, 1, 2] if (h, l, t) in y_h),
+            name=f"potential_hub_capacity_{h}_t{t}"
+        )
+for h in H0:
+    for t in T:
+        model.addConstr(u_hub[(h, t)] <= L_h[h][0], name=f"existing_hub_capacity_{h}_t{t}")
+print(f"  ✓ Đã thêm ràng buộc capacity hub (new / potential / existing)")
+
+# 9.1d Định nghĩa x_arc = luồng trên cung và capacity cung (potential arcs) – theo notebook
+def arc_in_path(path, arc):
+    """True nếu arc (u,v) xuất hiện trong path."""
+    u, v = arc[0], arc[1]
+    for (pu, pv) in path:
+        if (pu, pv) == (u, v):
+            return True
+    return False
+
+print("\n[1d] Định nghĩa x_arc = luồng trên cung và capacity cung:")
+for a in A:
+    for t in T:
+        flow_on_arc = gp.quicksum(
+            w_gk[(g, od, t)] * v_path[(g, od, idx, t)]
+            for g, od_list in OD_pairs.items()
+            for od in od_list
+            for idx in range(len(paths[(g, od)]))
+            if arc_in_path(paths[(g, od)][idx], a)
+        )
+        model.addConstr(x_arc[(a[0], a[1], t)] == flow_on_arc, name=f"x_arc_def_{a[0]}_{a[1]}_t{t}")
+for a in A_tilde:
+    for t in T:
+        cap_t = L_a[a][0] * y_a[(a[0], a[1], 0, t)] + L_a[a][1] * y_a[(a[0], a[1], 1, t)]
+        model.addConstr(x_arc[(a[0], a[1], t)] <= cap_t, name=f"arc_capacity_{a[0]}_{a[1]}_t{t}")
+print(f"  ✓ Đã thêm định nghĩa x_arc và capacity cho potential arcs")
 
 # 9.2 Hub level: mỗi hub phải chọn đúng 1 level mỗi period
 print("\n[2] Single level per hub per period:")
@@ -2182,11 +2255,67 @@ for a in A_tilde:
         )
 print(f"  ✓ Đã thêm ràng buộc single level cho arcs")
 
-# 9.4 Cập nhật objective để BAO GỒM hub_upgrade_cost và arc_upgrade_cost
-print("\n[4] Cập nhật objective (thêm hub + arc upgrade cost):")
-total_cost_full = service_cost + transport_cost + mode_switch_cost + hub_upgrade_cost + arc_upgrade_cost
-model.setObjective(total_cost_full, GRB.MINIMIZE)
-print(f"  ✓ Objective đã bao gồm: service + transport + mode_switch + hub_upgrade + arc_upgrade")
+# 9.4 Budget: investment_cost_per_period[t] == (hub + arc investment trong t), và <= B[t] (theo notebook)
+print("\n[4] Ràng buộc budget theo từng period (investment ≤ B[t]):")
+investment_cost_per_period = {}
+for t in T:
+    investment_cost_per_period[t] = model.addVar(
+        lb=0, vtype=GRB.CONTINUOUS,
+        name=f"investment_cost_period_{t}"
+    )
+
+for t in T:
+    period_terms = []
+    # Hub investment trong period t
+    for h in new_hubs:
+        if t == 1:
+            for l in [1, 2, 3]:
+                if l in L_h.get(h, {}):
+                    capacity_increase = L_h[h][l] - L_h[h][0]
+                    cost_per_unit = f_lh.get(l, 0)
+                    period_terms.append(y_h[(h, l, t)] * capacity_increase * cost_per_unit)
+        else:
+            for (hh, prev_l, l, tt) in hub_upgrade_vars:
+                if hh == h and tt == t:
+                    capacity_increase = L_h[h][l] - L_h[h][prev_l]
+                    cost_per_unit = f_lh.get(l, 0)
+                    period_terms.append(hub_upgrade_vars[(h, prev_l, l, t)] * capacity_increase * cost_per_unit)
+    for h in H_tilde:
+        if t == 1:
+            for l in [1, 2]:
+                if l in L_h.get(h, {}):
+                    capacity_increase = L_h[h][l] - L_h[h][0]
+                    cost_per_unit = f_lh.get(l, 0)
+                    period_terms.append(y_h[(h, l, t)] * capacity_increase * cost_per_unit)
+        else:
+            for (hh, prev_l, l, tt) in hub_upgrade_vars:
+                if hh == h and tt == t:
+                    capacity_increase = L_h[h][l] - L_h[h][prev_l]
+                    cost_per_unit = f_lh.get(l, 0)
+                    period_terms.append(hub_upgrade_vars[(h, prev_l, l, t)] * capacity_increase * cost_per_unit)
+    # Arc investment trong period t
+    for a in A_tilde:
+        if t == 1:
+            capacity_increase = L_a[a][1] - L_a[a][0]
+            cost_per_unit = f_la.get(a, 0)
+            period_terms.append(y_a[(a[0], a[1], 1, t)] * capacity_increase * cost_per_unit)
+        else:
+            if (a[0], a[1], t) in arc_upgrade_vars:
+                capacity_increase = L_a[a][1] - L_a[a][0]
+                cost_per_unit = f_la.get(a, 0)
+                period_terms.append(arc_upgrade_vars[(a[0], a[1], t)] * capacity_increase * cost_per_unit)
+
+    period_investment = gp.quicksum(period_terms) if period_terms else 0
+    model.addConstr(
+        investment_cost_per_period[t] == period_investment,
+        name=f"investment_cost_def_period_{t}"
+    )
+    model.addConstr(
+        investment_cost_per_period[t] <= B[t],
+        name=f"budget_constraint_period_{t}"
+    )
+    print(f"    Period {t}: investment_cost ≤ {B[t]:,}")
+print(f"  ✓ Đã thêm ràng buộc budget cho từng period")
 
 print(f"\n✓ ĐÃ THIẾT LẬP XONG CÁC RÀNG BUỘC CƠ BẢN")
 

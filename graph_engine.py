@@ -9,6 +9,7 @@ import matplotlib.patches as mpatches
 import plotly.graph_objects as go
 import plotly.express as px
 from typing import Dict, List, Any, Tuple, Optional
+import json
 import pandas as pd
 import numpy as np
 
@@ -47,6 +48,7 @@ class GraphEngine:
                 node['node_id'],
                 pos=(node.get('lon', 0), node.get('lat', 0)),
                 type=node.get('type', 'normal'),
+                project=node.get('project', 'N'),
                 label=node.get('name', f"N{node['node_id']}")
             )
         
@@ -56,6 +58,7 @@ class GraphEngine:
                 edge['from_node'],
                 edge['to_node'],
                 mode=edge.get('mode', 'road'),
+                project=edge.get('project', 'E'),
                 cost=edge.get('cost', 0),
                 capacity=edge.get('capacity', 0),
                 distance=edge.get('distance', 0)
@@ -79,6 +82,37 @@ class GraphEngine:
         filtered = [r for r in routes if str(r.get('commodity', '')).strip().lower() == c]
         return filtered[:10] if filtered else routes[:10]  # Fallback to all
 
+    def _resolve_node_pos(self, node_id, node_coords_opt: Dict = None) -> Optional[Tuple[float, float]]:
+        """Lấy (lon, lat) cho node - từ self.pos hoặc node_coords trong JSON."""
+        if node_id in self.pos:
+            return self.pos[node_id]
+        if node_coords_opt:
+            c = node_coords_opt.get(node_id) or node_coords_opt.get(str(node_id))
+            if c and len(c) >= 2:
+                x, y = float(c[0]), float(c[1])
+                if 8 <= y <= 12 and 103 <= x <= 108:
+                    return (x, y)
+                if 400000 <= x <= 800000 and 1000000 <= y <= 1300000:
+                    try:
+                        from coordinate_utils import convert_vn2000_to_wgs84
+                        lat, lon = convert_vn2000_to_wgs84(x, y)
+                        return (lon, lat)
+                    except Exception:
+                        return (x, y)
+                return (x, y)
+        return None
+
+    def _to_wgs84_if_utm(self, lon: float, lat: float) -> Tuple[float, float]:
+        """Chuyển VN-2000 sang WGS84 nếu cần, để đồ thị giống bản đồ."""
+        if 400000 <= lon <= 800000 and 1000000 <= lat <= 1300000:
+            try:
+                from coordinate_utils import convert_vn2000_to_wgs84
+                lat_w, lon_w = convert_vn2000_to_wgs84(lon, lat)
+                return (lon_w, lat_w)
+            except Exception:
+                pass
+        return (lon, lat)
+
     def visualize_network_interactive(
         self,
         nodes: pd.DataFrame,
@@ -89,176 +123,316 @@ class GraphEngine:
     ) -> go.Figure:
         """
         Create interactive network visualization with Plotly
-        
-        Args:
-            nodes: Node dataframe
-            edges: Edge dataframe
-            optimization_results: Results to highlight
-            highlight_paths: Whether to highlight optimal paths
-            commodity: Filter optimal routes by commodity (e.g. Rice, Passenger)
-            
-        Returns:
-            Plotly figure
+        Dùng WGS84 khi có để hiển thị giống bản đồ; vẽ đường tối ưu màu xanh.
         """
-        # Build graph
         G = self.build_graph(nodes, edges)
-        
-        # Get positions - use actual coordinates if available, otherwise use spring layout
         node_positions = nx.get_node_attributes(G, 'pos')
-        
-        # Check if we have valid coordinates (not all zeros or None)
-        has_valid_coords = False
+        node_coords_opt = (optimization_results or {}).get('node_coords', {})
+
+        valid_positions = {}
         if node_positions:
-            # Check if coordinates are valid (not None, not (0,0), and reasonable range)
-            valid_positions = {}
             for node_id, pos in node_positions.items():
                 if pos and pos[0] is not None and pos[1] is not None:
-                    # Check if coordinates are in reasonable range (not UTM which is 6-7 digits)
-                    # For Mekong, coordinates are UTM (x: 500k-700k, y: 1M-1.2M)
-                    # We'll use them as-is for visualization
-                    if abs(pos[0]) > 1 and abs(pos[1]) > 1:  # Not (0,0) or very small
-                        valid_positions[node_id] = pos
-                        has_valid_coords = True
-            
-            if has_valid_coords:
-                self.pos = valid_positions
-            else:
-                self.pos = nx.spring_layout(G, k=2, iterations=50, seed=42)
+                    lon, lat = float(pos[0]), float(pos[1])
+                    lon, lat = self._to_wgs84_if_utm(lon, lat)
+                    valid_positions[node_id] = (lon, lat)
+
+        if valid_positions:
+            self.pos = valid_positions
         else:
             self.pos = nx.spring_layout(G, k=2, iterations=50, seed=42)
         
-        # Create edge traces
         edge_traces = []
-        
-        # Group edges by mode
-        mode_colors = {
-            'road': '#95a5a6',
-            'water': '#3498db',
-            'rail': '#e74c3c',
-            'air': '#f39c12'
-        }
-        
-        for mode, color in mode_colors.items():
-            mode_edges = [(u, v) for u, v, d in G.edges(data=True) if d.get('mode') == mode]
-            
+        # Edges: mode + project (E=existing đậm, P=potential nhạt)
+        edge_styles = [
+            ('road', 'E', '#78350f', 3),
+            ('road', 'P', '#b45309', 1.5),
+            ('water', 'E', '#0369a1', 3.5),
+            ('water', 'P', '#0ea5e9', 1.5),
+            ('waterway', 'E', '#0369a1', 3.5),
+            ('waterway', 'P', '#0ea5e9', 1.5),
+            ('rail', 'E', '#e11d48', 2.5),
+            ('rail', 'P', '#f472b6', 1.5),
+            ('air', 'E', '#f59e0b', 2.5),
+            ('air', 'P', '#fcd34d', 1.5),
+        ]
+        for mode, proj, color, w in edge_styles:
+            mode_edges = [(u, v) for u, v, d in G.edges(data=True)
+                          if d.get('mode') == mode
+                          and str(d.get('project', 'E')).upper().strip()[:1] == proj]
             if mode_edges:
-                edge_x = []
-                edge_y = []
-                
+                edge_x, edge_y = [], []
                 for u, v in mode_edges:
-                    x0, y0 = self.pos[u]
-                    x1, y1 = self.pos[v]
-                    edge_x.extend([x0, x1, None])
-                    edge_y.extend([y0, y1, None])
-                
-                edge_trace = go.Scatter(
-                    x=edge_x, y=edge_y,
-                    line=dict(width=2, color=color),
-                    hoverinfo='none',
-                    mode='lines',
-                    name=f'{mode.capitalize()} Routes',
-                    showlegend=True
-                )
-                edge_traces.append(edge_trace)
+                    if u in self.pos and v in self.pos:
+                        x0, y0 = self.pos[u]
+                        x1, y1 = self.pos[v]
+                        edge_x.extend([x0, x1, None])
+                        edge_y.extend([y0, y1, None])
+                if edge_x:
+                    label = f'{mode.capitalize()} ({proj})' if proj == 'P' else f'{mode.capitalize()}'
+                    edge_traces.append(go.Scatter(
+                        x=edge_x, y=edge_y,
+                        line=dict(width=w, color=color, dash='dot' if proj == 'P' else 'solid'),
+                        hoverinfo='none', mode='lines', name=label, showlegend=True
+                    ))
         
-        # Highlight optimal paths if requested (filter by commodity)
+        # Đường tối ưu màu xanh - dùng node_coords từ JSON nếu thiếu pos
         if highlight_paths and optimization_results:
             top_routes = self._filter_routes_by_commodity(optimization_results, commodity)
             for route in top_routes[:5]:
                 path = route.get('path', [])
                 if len(path) >= 2:
-                    path_x = []
-                    path_y = []
+                    path_x, path_y = [], []
                     for i in range(len(path) - 1):
-                        if path[i] in self.pos and path[i+1] in self.pos:
-                            x0, y0 = self.pos[path[i]]
-                            x1, y1 = self.pos[path[i+1]]
-                            path_x.extend([x0, x1, None])
-                            path_y.extend([y0, y1, None])
-                    
-                    optimal_trace = go.Scatter(
-                        x=path_x, y=path_y,
-                        line=dict(width=4, color='#27ae60'),
-                        hoverinfo='none',
-                        mode='lines',
-                        name=f"Optimal ({route.get('commodity', '')})" if commodity else 'Optimal Route',
-                        showlegend=(route == top_routes[0])  # Only show once in legend
-                    )
-                    edge_traces.append(optimal_trace)
+                        p0 = self._resolve_node_pos(path[i], node_coords_opt)
+                        p1 = self._resolve_node_pos(path[i + 1], node_coords_opt)
+                        if p0 and p1:
+                            path_x.extend([p0[0], p1[0], None])
+                            path_y.extend([p0[1], p1[1], None])
+                    if path_x and path_y:
+                        optimal_trace = go.Scatter(
+                            x=path_x, y=path_y,
+                            line=dict(width=6, color='#27ae60'),
+                            hoverinfo='none',
+                            mode='lines',
+                            name=f"Optimal ({route.get('commodity', '')})" if commodity else 'Optimal Route',
+                            showlegend=(route == top_routes[0])
+                        )
+                        edge_traces.append(optimal_trace)
         
-        # Create node traces
-        hub_nodes = [n for n, d in G.nodes(data=True) if d.get('type') == 'hub']
+        # Node traces: Normal | Hub New | Hub Upgrade | Hub Existing
+        hub_new = [n for n, d in G.nodes(data=True) if d.get('type') == 'hub' and str(d.get('project', '')).upper().strip() == 'NEW']
+        hub_upgrade = [n for n, d in G.nodes(data=True) if d.get('type') == 'hub' and str(d.get('project', '')).upper().strip() == 'UPGRADE']
+        hub_existing = [n for n, d in G.nodes(data=True) if d.get('type') == 'hub' and str(d.get('project', '')).upper().strip() == 'E']
         normal_nodes = [n for n, d in G.nodes(data=True) if d.get('type') != 'hub']
         
-        # Normal nodes
-        normal_x = [self.pos[n][0] for n in normal_nodes if n in self.pos]
-        normal_y = [self.pos[n][1] for n in normal_nodes if n in self.pos]
-        normal_text = [G.nodes[n].get('label', str(n)) for n in normal_nodes]
+        node_traces = []
+        norm_in_pos = [n for n in normal_nodes if n in self.pos]
+        if norm_in_pos:
+            node_traces.append(go.Scatter(
+                x=[self.pos[n][0] for n in norm_in_pos], y=[self.pos[n][1] for n in norm_in_pos],
+                mode='markers+text', text=[G.nodes[n].get('label', str(n)) for n in norm_in_pos],
+                textposition="top center", hoverinfo='text',
+                marker=dict(size=12, color='#60a5fa', line=dict(width=2, color='#3b82f6')),
+                name='Node thường', showlegend=True
+            ))
+        for nlist, color, size, label in [
+            (hub_new, '#22c55e', 18, 'Hub Mới'),
+            (hub_upgrade, '#a78bfa', 16, 'Hub Nâng cấp'),
+            (hub_existing, '#f97316', 14, 'Hub Hiện có'),
+        ]:
+            if nlist:
+                nlist = [n for n in nlist if n in self.pos]
+                if nlist:
+                    node_traces.append(go.Scatter(
+                        x=[self.pos[n][0] for n in nlist], y=[self.pos[n][1] for n in nlist],
+                        mode='markers+text', text=[G.nodes[n].get('label', str(n)) for n in nlist],
+                        textposition="top center", hoverinfo='text',
+                        marker=dict(size=size, color=color, line=dict(width=2, color=color), symbol='star'),
+                        name=label, showlegend=True
+                    ))
         
-        normal_trace = go.Scatter(
-            x=normal_x, y=normal_y,
-            mode='markers+text',
-            hoverinfo='text',
-            text=normal_text,
-            textposition="top center",
-            marker=dict(
-                size=15,
-                color='#ecf0f1',
-                line=dict(width=2, color='#34495e')
-            ),
-            name='Normal Nodes',
-            showlegend=True
+        fig = go.Figure(data=edge_traces + node_traces)
+        
+        # Layout giống bản đồ khi có tọa độ địa lý
+        is_geo = all(
+            8 <= p[1] <= 12 and 103 <= p[0] <= 108
+            for p in (list(self.pos.values())[:3] if self.pos else [])
         )
-        
-        # Hub nodes
-        hub_x = [self.pos[n][0] for n in hub_nodes if n in self.pos]
-        hub_y = [self.pos[n][1] for n in hub_nodes if n in self.pos]
-        hub_text = [G.nodes[n].get('label', str(n)) for n in hub_nodes]
-        
-        hub_trace = go.Scatter(
-            x=hub_x, y=hub_y,
-            mode='markers+text',
-            hoverinfo='text',
-            text=hub_text,
-            textposition="top center",
-            marker=dict(
-                size=25,
-                color='#f39c12',
-                line=dict(width=3, color='#d68910'),
-                symbol='star'
-            ),
-            name='Hub Nodes',
-            showlegend=True
-        )
-        
-        # Create figure
-        fig = go.Figure(data=edge_traces + [normal_trace, hub_trace])
-        
-        # Update layout
-        fig.update_layout(
-            title=dict(
-                text='Logistics Network Graph',
-                font=dict(size=20, color='#2c3e50', family='Inter')
-            ),
+        layout_kw = dict(
+            title=dict(text='Mạng lưới vận tải', font=dict(size=18, color='#1e293b')),
             showlegend=True,
             hovermode='closest',
-            margin=dict(b=20, l=5, r=5, t=40),
-            xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-            yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-            plot_bgcolor='rgba(0,0,0,0)',
+            margin=dict(b=20, l=20, r=20, t=50),
+            xaxis=dict(showgrid=is_geo, zeroline=False, showticklabels=False, gridcolor='rgba(0,0,0,0.05)'),
+            yaxis=dict(showgrid=is_geo, zeroline=False, showticklabels=False, gridcolor='rgba(0,0,0,0.05)'),
+            plot_bgcolor='#f8fafc',
             paper_bgcolor='white',
-            height=500,
-            legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=1.02,
-                xanchor="right",
-                x=1
-            )
+            height=520,
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+            font=dict(family='Inter', size=12)
         )
+        if is_geo:
+            layout_kw['xaxis']['range'] = [min(p[0] for p in self.pos.values()) - 0.1, max(p[0] for p in self.pos.values()) + 0.1]
+            layout_kw['yaxis']['range'] = [min(p[1] for p in self.pos.values()) - 0.1, max(p[1] for p in self.pos.values()) + 0.1]
+        fig.update_layout(**layout_kw)
         
         return fig
-    
+
+    def visualize_network_animated(
+        self,
+        nodes: pd.DataFrame,
+        edges: pd.DataFrame,
+        optimization_results: Dict[str, Any],
+        commodity: Optional[str] = None,
+    ) -> Optional[go.Figure]:
+        """
+        Plotly figure với animation: đường optimal vẽ dần từ điểm đầu đến điểm cuối
+        cho từng tuyến/cặp OD (commodity). Dùng frames + play button.
+        """
+        if not optimization_results:
+            return None
+        G = self.build_graph(nodes, edges)
+        node_positions = nx.get_node_attributes(G, 'pos')
+        node_coords_opt = optimization_results.get('node_coords', {})
+
+        valid_positions = {}
+        if node_positions:
+            for node_id, pos in node_positions.items():
+                if pos and pos[0] is not None and pos[1] is not None:
+                    lon, lat = float(pos[0]), float(pos[1])
+                    lon, lat = self._to_wgs84_if_utm(lon, lat)
+                    valid_positions[node_id] = (lon, lat)
+        if valid_positions:
+            self.pos = valid_positions
+        else:
+            self.pos = nx.spring_layout(G, k=2, iterations=50, seed=42)
+
+        edge_traces = []
+        edge_styles = [
+            ('road', 'E', '#78350f', 3), ('road', 'P', '#b45309', 1.5),
+            ('water', 'E', '#0369a1', 3.5), ('water', 'P', '#0ea5e9', 1.5),
+            ('waterway', 'E', '#0369a1', 3.5), ('waterway', 'P', '#0ea5e9', 1.5),
+            ('rail', 'E', '#e11d48', 2.5), ('rail', 'P', '#f472b6', 1.5),
+            ('air', 'E', '#f59e0b', 2.5), ('air', 'P', '#fcd34d', 1.5),
+        ]
+        for mode, proj, color, w in edge_styles:
+            mode_edges = [(u, v) for u, v, d in G.edges(data=True)
+                          if d.get('mode') == mode
+                          and str(d.get('project', 'E')).upper().strip()[:1] == proj]
+            if mode_edges:
+                edge_x, edge_y = [], []
+                for u, v in mode_edges:
+                    if u in self.pos and v in self.pos:
+                        x0, y0 = self.pos[u]
+                        x1, y1 = self.pos[v]
+                        edge_x.extend([x0, x1, None])
+                        edge_y.extend([y0, y1, None])
+                if edge_x:
+                    label = f'{mode.capitalize()} ({proj})' if proj == 'P' else f'{mode.capitalize()}'
+                    edge_traces.append(go.Scatter(
+                        x=edge_x, y=edge_y,
+                        line=dict(width=w, color=color, dash='dot' if proj == 'P' else 'solid'),
+                        hoverinfo='none', mode='lines', name=label, showlegend=True
+                    ))
+
+        top_routes = self._filter_routes_by_commodity(optimization_results, commodity)
+        path_coords_list = []
+        path_labels = []
+        for route in top_routes[:8]:
+            path = route.get('path', [])
+            coords = []
+            for nid in path:
+                p = self._resolve_node_pos(nid, node_coords_opt)
+                if p:
+                    coords.append([p[0], p[1]])
+            if len(coords) >= 2:
+                path_coords_list.append(coords)
+                lbl = str(route.get('commodity', '') or '')
+                if not lbl and (route.get('origin') or route.get('destination')):
+                    lbl = f"{route.get('origin', '')}→{route.get('destination', '')}"
+                path_labels.append(lbl or f"Tuyến {len(path_coords_list)+1}")
+
+        if not path_coords_list:
+            return None
+
+        hub_new = [n for n, d in G.nodes(data=True) if d.get('type') == 'hub' and str(d.get('project', '')).upper().strip() == 'NEW']
+        hub_upgrade = [n for n, d in G.nodes(data=True) if d.get('type') == 'hub' and str(d.get('project', '')).upper().strip() == 'UPGRADE']
+        hub_existing = [n for n, d in G.nodes(data=True) if d.get('type') == 'hub' and str(d.get('project', '')).upper().strip() == 'E']
+        normal_nodes = [n for n, d in G.nodes(data=True) if d.get('type') != 'hub']
+        node_traces = []
+        norm_in_pos = [n for n in normal_nodes if n in self.pos]
+        if norm_in_pos:
+            node_traces.append(go.Scatter(
+                x=[self.pos[n][0] for n in norm_in_pos], y=[self.pos[n][1] for n in norm_in_pos],
+                mode='markers+text', text=[G.nodes[n].get('label', str(n)) for n in norm_in_pos],
+                textposition="top center", hoverinfo='text',
+                marker=dict(size=12, color='#60a5fa', line=dict(width=2, color='#3b82f6')),
+                name='Node thường', showlegend=True
+            ))
+        for nlist, color, size, label in [
+            (hub_new, '#22c55e', 18, 'Hub Mới'),
+            (hub_upgrade, '#a78bfa', 16, 'Hub Nâng cấp'),
+            (hub_existing, '#f97316', 14, 'Hub Hiện có'),
+        ]:
+            if nlist:
+                nlist = [n for n in nlist if n in self.pos]
+                if nlist:
+                    node_traces.append(go.Scatter(
+                        x=[self.pos[n][0] for n in nlist], y=[self.pos[n][1] for n in nlist],
+                        mode='markers+text', text=[G.nodes[n].get('label', str(n)) for n in nlist],
+                        textposition="top center", hoverinfo='text',
+                        marker=dict(size=size, color=color, line=dict(width=2, color=color), symbol='star'),
+                        name=label, showlegend=True
+                    ))
+
+        max_len = max(len(p) for p in path_coords_list)
+        n_frames = max(1, max_len - 1)
+
+        def make_route_traces_for_frame(frame_idx: int):
+            out = []
+            for i, coords in enumerate(path_coords_list):
+                n_show = min(frame_idx + 2, len(coords))
+                if n_show < 2:
+                    xs, ys = [coords[0][0]], [coords[0][1]]
+                else:
+                    xs = [c[0] for c in coords[:n_show]]
+                    ys = [c[1] for c in coords[:n_show]]
+                out.append(go.Scatter(
+                    x=xs, y=ys,
+                    line=dict(width=6, color='#27ae60'),
+                    mode='lines',
+                    name=path_labels[i] if i < len(path_labels) else f'Route {i+1}',
+                    showlegend=True,
+                    legendgroup='optimal',
+                ))
+            return out
+
+        base_data = list(edge_traces) + list(node_traces) + make_route_traces_for_frame(0)
+        fig = go.Figure(data=base_data)
+        frames = []
+        for f in range(n_frames):
+            frame_data = list(edge_traces) + list(node_traces) + make_route_traces_for_frame(f)
+            frames.append(go.Frame(data=frame_data, name=str(f)))
+
+        fig.frames = frames
+        is_geo = all(
+            8 <= p[1] <= 12 and 103 <= p[0] <= 108
+            for p in (list(self.pos.values())[:3] if self.pos else [])
+        )
+        layout_kw = dict(
+            title=dict(text='Đường chuyển động theo cặp OD (commodity)', font=dict(size=18, color='#1e293b')),
+            showlegend=True,
+            hovermode='closest',
+            margin=dict(b=20, l=20, r=20, t=50),
+            xaxis=dict(showgrid=is_geo, zeroline=False, showticklabels=False, gridcolor='rgba(0,0,0,0.05)'),
+            yaxis=dict(showgrid=is_geo, zeroline=False, showticklabels=False, gridcolor='rgba(0,0,0,0.05)'),
+            plot_bgcolor='#f8fafc',
+            paper_bgcolor='white',
+            height=520,
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+            font=dict(family='Inter', size=12),
+            updatemenus=[dict(
+                type='buttons',
+                showactive=False,
+                buttons=[
+                    dict(label='▶ Phát', method='animate', args=[None, dict(frame=dict(duration=120, redraw=True), fromcurrent=True, mode='immediate')]),
+                    dict(label='⏸ Tạm dừng', method='animate', args=[[None], dict(mode='immediate')]),
+                ],
+                x=0.1, xanchor='left', y=0, yanchor='top',
+            )],
+            sliders=[dict(
+                active=0,
+                steps=[dict(args=[[frames[k].name], dict(mode='immediate', frame=dict(duration=0))], label=str(k)) for k in range(len(frames))],
+                x=0.1, len=0.8, xanchor='left', y=0, yanchor='top', pad=dict(t=40),
+            )],
+        )
+        if is_geo:
+            layout_kw['xaxis']['range'] = [min(p[0] for p in self.pos.values()) - 0.1, max(p[0] for p in self.pos.values()) + 0.1]
+            layout_kw['yaxis']['range'] = [min(p[1] for p in self.pos.values()) - 0.1, max(p[1] for p in self.pos.values()) + 0.1]
+        fig.update_layout(**layout_kw)
+        return fig
+
     def visualize_network(
         self,
         nodes: pd.DataFrame,
@@ -306,7 +480,7 @@ class GraphEngine:
         nx.draw_networkx_edges(
             G, self.pos, 
             edgelist=road_edges,
-            edge_color='#95a5a6',
+            edge_color='#78350f',
             width=1.5,
             alpha=0.6,
             arrows=True,
@@ -381,7 +555,7 @@ class GraphEngine:
         legend_elements = [
             mpatches.Patch(color='#f39c12', label='Hub Node'),
             mpatches.Patch(color='#ecf0f1', label='Normal Node'),
-            mpatches.Patch(color='#95a5a6', label='Road Transport'),
+            mpatches.Patch(color='#78350f', label='Road Transport'),
             mpatches.Patch(color='#3498db', label='Water Transport')
         ]
         
@@ -571,71 +745,127 @@ class GraphEngine:
         commodity: Optional[str] = None,
         center_lat: Optional[float] = None,
         center_lon: Optional[float] = None,
-        zoom_start: int = 9
+        zoom_start: int = 8,
+        use_osm_tiles: bool = True
     ):
         """
-        Render logistics network on real map (Folium/OpenStreetMap).
-        Requires lat/lon in WGS84 (data_loader converts VN-2000 automatically).
-        
-        Args:
-            nodes: Node dataframe with lat, lon
-            edges: Edge dataframe with from_node, to_node, mode
-            optimization_results: Results to highlight optimal paths
-            highlight_paths: Whether to highlight optimal routes
-            center_lat, center_lon: Map center (auto from nodes if None)
-            zoom_start: Initial zoom level
-            
-        Returns:
-            folium.Map or None if folium not installed
+        Render logistics network on Folium map.
+        use_osm_tiles=True: OpenStreetMap. use_osm_tiles=False: CartoDB Positron (nền nhạt, giống đồ thị).
         """
         if not _HAS_FOLIUM:
             return None
         
-        # Validate WGS84 coordinates (Mekong: lat 9-11, lon 104-107)
         valid_nodes = nodes.dropna(subset=['lat', 'lon'])
         valid_nodes = valid_nodes[
             (valid_nodes['lat'].between(8, 12)) & 
             (valid_nodes['lon'].between(103, 108))
         ]
-        
         if valid_nodes.empty:
-            return None
+            raw = nodes.dropna(subset=['lat', 'lon'])
+            if raw.empty:
+                return None
+            try:
+                from coordinate_utils import convert_vn2000_to_wgs84
+                lats, lons = [], []
+                for _, row in raw.iterrows():
+                    x, y = float(row['lon']), float(row['lat'])
+                    if 400000 <= x <= 800000 and 1000000 <= y <= 1300000:
+                        lat, lon = convert_vn2000_to_wgs84(x, y)
+                        lats.append(lat); lons.append(lon)
+                    else:
+                        lats.append(y); lons.append(x)
+                if len(lats) == len(raw):
+                    valid_nodes = raw.copy()
+                    valid_nodes['lat'] = lats
+                    valid_nodes['lon'] = lons
+                else:
+                    valid_nodes = raw
+            except Exception:
+                valid_nodes = raw
         
-        # Map center
         if center_lat is None:
             center_lat = valid_nodes['lat'].mean()
         if center_lon is None:
             center_lon = valid_nodes['lon'].mean()
         
-        m = folium.Map(
-            location=[center_lat, center_lon],
-            zoom_start=zoom_start,
-            tiles='OpenStreetMap',
-            control_scale=True
-        )
+        # OSM = bản đồ thực tế; tiles=None = không map, nền trắng
+        if use_osm_tiles:
+            m = folium.Map(
+                location=[center_lat, center_lon],
+                zoom_start=zoom_start,
+                tiles='OpenStreetMap',
+                control_scale=True
+            )
+        else:
+            m = folium.Map(
+                location=[center_lat, center_lon],
+                zoom_start=zoom_start,
+                tiles=None,
+                control_scale=True
+            )
+            # Nền trắng khi không có map
+            m.get_root().html.add_child(folium.Element("""
+            <style>
+                .leaflet-container { background: #f8fafc !important; }
+            </style>
+            """))
         
         # Build node lookup
         node_lookup = valid_nodes.set_index('node_id')
         
-        # Draw edges by mode
+        # Edges: mode + project (P=potential, E=existing)
         mode_styles = {
-            'road': {'color': '#3498db', 'weight': 2, 'dash_array': '0'},
-            'water': {'color': '#2980b9', 'weight': 3, 'dash_array': '5, 5'},
-            'waterway': {'color': '#2980b9', 'weight': 3, 'dash_array': '5, 5'},
+            ('road', 'E'): {'color': '#78350f', 'weight': 3, 'dash_array': '0'},
+            ('road', 'P'): {'color': '#b45309', 'weight': 2, 'dash_array': '5, 5'},
+            ('water', 'E'): {'color': '#0369a1', 'weight': 4, 'dash_array': '0'},
+            ('water', 'P'): {'color': '#0ea5e9', 'weight': 2, 'dash_array': '8, 8'},
+            ('waterway', 'E'): {'color': '#0369a1', 'weight': 4, 'dash_array': '0'},
+            ('waterway', 'P'): {'color': '#0ea5e9', 'weight': 2, 'dash_array': '8, 8'},
         }
+        def edge_style(mode, proj):
+            p = str(proj).upper()[:1] if proj else 'E'
+            return mode_styles.get((mode, p)) or mode_styles.get((mode, 'E')) or {'color': '#64748b', 'weight': 2, 'dash_array': '0'}
         
         optimal_edges = set()
+        optimal_path_coords = []
+        optimal_paths_for_animation = []  # [{coords: [[lat,lon],...], label: commodity}, ...]
         if highlight_paths and optimization_results:
             top_routes = self._filter_routes_by_commodity(optimization_results, commodity)
+            node_coords_opt = optimization_results.get('node_coords') or {}
             for route in top_routes[:5]:
                 path = route.get('path', [])
                 for i in range(len(path) - 1):
                     optimal_edges.add((path[i], path[i + 1]))
+                path_coords = []
+                for nid in path:
+                    if nid in node_lookup.index:
+                        r = node_lookup.loc[nid]
+                        path_coords.append([r['lat'], r['lon']])
+                    else:
+                        c = node_coords_opt.get(nid) or node_coords_opt.get(str(nid))
+                        if c and len(c) >= 2:
+                            x, y = float(c[0]), float(c[1])
+                            if 400000 <= x <= 800000 and 1000000 <= y <= 1300000:
+                                try:
+                                    from coordinate_utils import convert_vn2000_to_wgs84
+                                    lat, lon = convert_vn2000_to_wgs84(x, y)
+                                    path_coords.append([lat, lon])
+                                except Exception:
+                                    path_coords.append([y, x])
+                            elif 8 <= y <= 12 and 103 <= x <= 108:
+                                path_coords.append([y, x])
+                if len(path_coords) >= 2:
+                    optimal_path_coords.append(path_coords)
+                    optimal_paths_for_animation.append({
+                        'coords': path_coords,
+                        'label': str(route.get('commodity', '') or 'Optimal')
+                    })
         
         for _, edge in edges.iterrows():
             u, v = edge['from_node'], edge['to_node']
             mode = str(edge.get('mode', 'road')).lower()
-            style = mode_styles.get(mode, mode_styles['road'])
+            proj = edge.get('project', 'E')
+            style = edge_style(mode, proj)
             
             if u not in node_lookup.index or v not in node_lookup.index:
                 continue
@@ -648,7 +878,7 @@ class GraphEngine:
                 folium.PolyLine(
                     coords,
                     color='#27ae60',
-                    weight=4,
+                    weight=5,
                     opacity=0.9,
                     popup=f'Optimal route: {u} → {v}'
                 ).add_to(m)
@@ -662,45 +892,105 @@ class GraphEngine:
                     popup=f'{mode} | {u} → {v}'
                 ).add_to(m)
         
-        # Draw nodes
-        hub_nodes = set()
-        if 'type' in valid_nodes.columns:
-            hub_nodes = set(valid_nodes[valid_nodes['type'] == 'hub']['node_id'])
+        for path_coords in optimal_path_coords:
+            folium.PolyLine(
+                path_coords,
+                color='#27ae60',
+                weight=5,
+                opacity=0.9,
+                popup='Optimal route'
+            ).add_to(m)
+
+        # Animation ngay trên bản đồ OSM: tuyến xanh, icon pin Leaflet (marker-icon-2x) mỗi tuyến một màu
+        if optimal_paths_for_animation and hasattr(folium, 'plugins'):
+            try:
+                # Pin cùng kiểu Leaflet, nhiều màu (leaflet-color-markers)
+                marker_colors = ["blue", "red", "green", "orange", "violet", "gold", "yellow", "grey"]
+                base_url = "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img"
+                shadow_url = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png"
+                features = []
+                for idx, p in enumerate(optimal_paths_for_animation):
+                    coords = p['coords']
+                    if len(coords) < 2:
+                        continue
+                    color_name = marker_colors[idx % len(marker_colors)]
+                    icon_url = f"{base_url}/marker-icon-2x-{color_name}.png"
+                    # [lat, lon] -> [lon, lat] cho GeoJSON
+                    coords_geojson = [[float(c[1]), float(c[0])] for c in coords]
+                    times = [f"2020-01-01T00:00:{i:02d}" for i in range(len(coords))]
+                    features.append({
+                        "type": "Feature",
+                        "geometry": {"type": "LineString", "coordinates": coords_geojson},
+                        "properties": {
+                            "times": times,
+                            "style": {"color": "#27ae60", "weight": 6},
+                            "popup": p.get('label', 'Optimal route'),
+                            "icon": "marker",
+                            "iconstyle": {
+                                "iconUrl": icon_url,
+                                "iconSize": [25, 41],
+                                "iconAnchor": [12, 41],
+                                "popupAnchor": [1, -34],
+                                "shadowUrl": shadow_url,
+                                "shadowSize": [41, 41],
+                            },
+                        },
+                    })
+                if features:
+                    geojson = {"type": "FeatureCollection", "features": features}
+                    # duration: đường đã vẽ giữ hiển thị (không biến mất); period: bước thời gian
+                    folium.plugins.TimestampedGeoJson(
+                        geojson,
+                        period="PT1S",
+                        duration="PT99S",
+                        add_last_point=True,
+                        auto_play=False,
+                        loop=False,
+                        max_speed=2,
+                        loop_button=True,
+                        time_slider_drag_update=True,
+                    ).add_to(m)
+            except Exception:
+                pass
+
+        # Draw nodes: Normal | Hub Existing (E) | Hub New | Hub Upgrade
+        project_col = 'project' if 'project' in valid_nodes.columns else None
+        hub_new, hub_upgrade, hub_existing = set(), set(), set()
+        if project_col:
+            proj_str = valid_nodes[project_col].astype(str).str.upper().str.strip()
+            hub_new = set(valid_nodes[proj_str == 'NEW']['node_id'])
+            hub_upgrade = set(valid_nodes[proj_str == 'UPGRADE']['node_id'])
+            hub_existing = set(valid_nodes[(valid_nodes['type'] == 'hub') & (proj_str == 'E')]['node_id'])
+        else:
+            hub_existing = set(valid_nodes[valid_nodes['type'] == 'hub']['node_id']) if 'type' in valid_nodes.columns else set()
         
         for _, node in valid_nodes.iterrows():
             nid = node['node_id']
             lat, lon = node['lat'], node['lon']
             name = node.get('name', f'Node {nid}')
             
-            if nid in hub_nodes:
-                color = 'red'
-                icon = 'star'
+            if nid in hub_new:
+                color, fill_color, radius = '#16a34a', '#22c55e', 10  # Xanh lá đậm
+                node_type = 'Hub Mới'
+            elif nid in hub_upgrade:
+                color, fill_color, radius = '#7c3aed', '#a78bfa', 9   # Tím
+                node_type = 'Hub Nâng cấp'
+            elif nid in hub_existing:
+                color, fill_color, radius = '#ea580c', '#f97316', 7   # Cam
+                node_type = 'Hub Hiện có'
             else:
-                color = 'blue'
-                icon = 'info-sign'
+                color, fill_color, radius = '#3b82f6', '#60a5fa', 5   # Xanh dương
+                node_type = 'Node thường'
             
             folium.CircleMarker(
                 location=[lat, lon],
-                radius=8 if nid in hub_nodes else 5,
-                popup=f'<b>{name}</b><br>ID: {nid}<br>Type: {"Hub" if nid in hub_nodes else "Normal"}',
+                radius=radius,
+                popup=f'<b>{name}</b><br>ID: {nid}<br>{node_type}',
                 color=color,
                 fill=True,
-                fillColor=color,
-                fillOpacity=0.8
+                fillColor=fill_color,
+                fillOpacity=0.85,
+                weight=2
             ).add_to(m)
-        
-        # Legend (include commodity filter if applied)
-        opt_label = f"Optimal ({commodity})" if commodity else "Optimal Route"
-        legend_html = f'''
-        <div style="position: fixed; bottom: 50px; left: 50px; z-index: 1000; 
-                    background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">
-        <p><b>Legend</b></p>
-        <p><span style="color: #3498db;">━━</span> Roadway</p>
-        <p><span style="color: #2980b9;">╌╌</span> Waterway</p>
-        <p><span style="color: #27ae60;">━━</span> {opt_label}</p>
-        <p><span style="color: red;">●</span> Hub | <span style="color: blue;">●</span> Normal</p>
-        </div>
-        '''
-        m.get_root().html.add_child(folium.Element(legend_html))
         
         return m
