@@ -22,6 +22,17 @@ try:
 except ImportError:
     _HAS_STREAMLIT_FOLIUM = False
 
+# Render Folium map via HTML iframe (works on Streamlit Cloud when st_folium fails)
+def _render_folium_html(folium_map, height: int = 550, key: str = "folium_map"):
+    try:
+        html = folium_map._repr_html_()
+        if html:
+            st.components.v1.html(html, height=height, scrolling=False)
+            return True
+    except Exception:
+        pass
+    return False
+
 # Page config
 st.set_page_config(
     page_title="Graph-Aware Logistics Planner",
@@ -465,7 +476,11 @@ with tab_scenario:
                     **_folium_map_kwargs(use_osm_tiles)
                 )
                 if folium_map:
-                    st_folium(folium_map, width=None, height=500, key=f"scenario_folium_map_{st.session_state.period}_{st.session_state.commodity}")
+                    if not _render_folium_html(folium_map, height=550, key=f"scenario_folium_{st.session_state.period}_{st.session_state.commodity}"):
+                        try:
+                            st_folium(folium_map, width=700, height=500, key=f"scenario_folium_map_{st.session_state.period}_{st.session_state.commodity}")
+                        except Exception:
+                            raise ValueError("Folium returned None")
                     if opt_results:
                         st.caption("Use **time slider** below map to see optimal route animate from origin to destination (each OD/commodity).")
                     animation_on_map = True
@@ -686,9 +701,13 @@ with tab_network:
                         **_folium_map_kwargs(use_osm_net)
                     )
                     if folium_map:
-                        st_folium(folium_map, width=None, height=500, key="net_folium")
-                        st.caption("Use **time slider** below map to see optimal route animate.")
+                        if not _render_folium_html(folium_map, height=550, key="net_folium"):
+                            try:
+                                st_folium(folium_map, width=700, height=500, key="net_folium")
+                            except Exception:
+                                pass
                         net_animation_on_map = True
+                        st.caption("Use **time slider** below map to see optimal route animate.")
                     else:
                         raise ValueError("Folium returned None")
                 except (TypeError, ValueError, AttributeError, KeyError):
