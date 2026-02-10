@@ -655,32 +655,47 @@ with tab_network:
         with col_n1:
             graph_data = services['loader'].load_region_data(st.session_state.region)
             opt_results = st.session_state.optimization_results
+            net_nodes = graph_data.get('nodes')
+            net_edges = graph_data.get('edges')
+            if net_nodes is not None and not isinstance(net_nodes, pd.DataFrame):
+                net_nodes = pd.DataFrame(net_nodes) if net_nodes else pd.DataFrame()
+            if net_edges is not None and not isinstance(net_edges, pd.DataFrame):
+                net_edges = pd.DataFrame(net_edges) if net_edges else pd.DataFrame()
+            if net_nodes is None:
+                net_nodes = pd.DataFrame()
+            if net_edges is None:
+                net_edges = pd.DataFrame()
+
             use_osm_net = st.checkbox("Show map (OpenStreetMap)", value=True, key="net_osm")
             net_animation_on_map = False
-            if _HAS_STREAMLIT_FOLIUM:
-                folium_map = services['graph'].visualize_network_map(
-                    nodes=graph_data['nodes'], edges=graph_data['edges'],
-                    optimization_results=opt_results, highlight_paths=True,
-                    commodity=st.session_state.commodity, use_osm_tiles=use_osm_net
-                )
-                if folium_map:
-                    st_folium(folium_map, width=None, height=500, key="net_folium")
-                    st.caption("Use **time slider** below map to see optimal route animate.")
-                    net_animation_on_map = True
-                else:
+            if _HAS_STREAMLIT_FOLIUM and not net_nodes.empty:
+                try:
+                    folium_map = services['graph'].visualize_network_map(
+                        nodes=net_nodes, edges=net_edges,
+                        optimization_results=opt_results, highlight_paths=True,
+                        commodity=st.session_state.commodity, use_osm_tiles=use_osm_net
+                    )
+                    if folium_map:
+                        st_folium(folium_map, width=None, height=500, key="net_folium")
+                        st.caption("Use **time slider** below map to see optimal route animate.")
+                        net_animation_on_map = True
+                    else:
+                        raise ValueError("Folium returned None")
+                except (TypeError, ValueError, AttributeError, KeyError):
                     fig = services['graph'].visualize_network_interactive(
-                        nodes=graph_data['nodes'], edges=graph_data['edges'],
+                        nodes=net_nodes, edges=net_edges,
                         optimization_results=opt_results, highlight_paths=True,
                         commodity=st.session_state.commodity
                     )
                     st.plotly_chart(fig, use_container_width=True, key="net_plotly")
             else:
-                fig = services['graph'].visualize_network_interactive(
-                    nodes=graph_data['nodes'], edges=graph_data['edges'],
-                    optimization_results=opt_results, highlight_paths=True,
-                    commodity=st.session_state.commodity
-                )
-                st.plotly_chart(fig, use_container_width=True, key="net_plotly")
+                if not (net_nodes.empty or net_edges.empty):
+                    fig = services['graph'].visualize_network_interactive(
+                        nodes=net_nodes, edges=net_edges,
+                        optimization_results=opt_results, highlight_paths=True,
+                        commodity=st.session_state.commodity
+                    )
+                    st.plotly_chart(fig, use_container_width=True, key="net_plotly")
             if not net_animation_on_map:
                 _anim_fn = getattr(services['graph'], 'visualize_network_animated', None)
                 if callable(_anim_fn):

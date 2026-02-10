@@ -795,7 +795,14 @@ class GraphEngine:
                     valid_nodes = raw
             except Exception:
                 valid_nodes = raw
-        
+            # If conversion failed, lat/lon may still be VN2000; Folium needs WGS84
+            if not valid_nodes.empty:
+                lat_vals = pd.to_numeric(valid_nodes['lat'], errors='coerce')
+                lon_vals = pd.to_numeric(valid_nodes['lon'], errors='coerce')
+                if (lat_vals.max() > 90 or lat_vals.min() < -90 or
+                        lon_vals.max() > 180 or lon_vals.min() < -180):
+                    return None
+
         if center_lat is None:
             center_lat = valid_nodes['lat'].mean()
         if center_lon is None:
