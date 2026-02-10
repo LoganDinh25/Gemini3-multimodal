@@ -5,6 +5,7 @@ Main Streamlit Application for Hackathon Demo
 
 import streamlit as st
 import json
+import inspect
 from pathlib import Path
 import pandas as pd
 import plotly.graph_objects as go
@@ -265,6 +266,14 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+def _folium_map_kwargs(use_osm_tiles: bool = True):
+    """Only pass use_osm_tiles if GraphEngine.visualize_network_map accepts it (backward compatible)."""
+    sig = inspect.signature(services["graph"].visualize_network_map)
+    if "use_osm_tiles" in sig.parameters:
+        return {"use_osm_tiles": use_osm_tiles}
+    return {}
+
+
 def _update_cost_comparison(loader, region: str, period: int, optimized: dict):
     """Compute cost comparison (baseline vs optimized) and store in session_state."""
     if not optimized:
@@ -453,7 +462,7 @@ with tab_scenario:
                     optimization_results=opt_results if opt_results else None,
                     highlight_paths=bool(opt_results),
                     commodity=st.session_state.commodity,
-                    use_osm_tiles=use_osm_tiles
+                    **_folium_map_kwargs(use_osm_tiles)
                 )
                 if folium_map:
                     st_folium(folium_map, width=None, height=500, key=f"scenario_folium_map_{st.session_state.period}_{st.session_state.commodity}")
@@ -471,7 +480,7 @@ with tab_scenario:
                         optimization_results=opt_results, highlight_paths=bool(opt_results),
                         commodity=st.session_state.commodity
                     )
-                    st.plotly_chart(fig, use_container_width=True, key=f"scenario_map_{st.session_state.period}_{st.session_state.commodity}")
+                    st.plotly_chart(fig, width='stretch', key=f"scenario_map_{st.session_state.period}_{st.session_state.commodity}")
         else:
             if not (nodes_df.empty or edges_df.empty):
                 fig = services['graph'].visualize_network_interactive(
@@ -480,7 +489,7 @@ with tab_scenario:
                     highlight_paths=bool(opt_results),
                     commodity=st.session_state.commodity
                 )
-                st.plotly_chart(fig, use_container_width=True, key=f"scenario_map_{st.session_state.period}_{st.session_state.commodity}")
+                st.plotly_chart(fig, width='stretch', key=f"scenario_map_{st.session_state.period}_{st.session_state.commodity}")
         if opt_results and not animation_on_map and not (nodes_df.empty or edges_df.empty):
             _anim_fn = getattr(services['graph'], 'visualize_network_animated', None)
             if callable(_anim_fn):
@@ -493,7 +502,7 @@ with tab_scenario:
                     )
                     if fig_anim:
                         st.markdown("**Animated route per OD (commodity)** — click ▶ Play to see route animate from origin to destination.")
-                        st.plotly_chart(fig_anim, use_container_width=True, key=f"scenario_animated_{st.session_state.period}_{st.session_state.commodity}")
+                        st.plotly_chart(fig_anim, width='stretch', key=f"scenario_animated_{st.session_state.period}_{st.session_state.commodity}")
                 except (AttributeError, TypeError, KeyError, ValueError):
                     pass
         st.markdown("""
@@ -673,7 +682,8 @@ with tab_network:
                     folium_map = services['graph'].visualize_network_map(
                         nodes=net_nodes, edges=net_edges,
                         optimization_results=opt_results, highlight_paths=True,
-                        commodity=st.session_state.commodity, use_osm_tiles=use_osm_net
+                        commodity=st.session_state.commodity,
+                        **_folium_map_kwargs(use_osm_net)
                     )
                     if folium_map:
                         st_folium(folium_map, width=None, height=500, key="net_folium")
@@ -687,7 +697,7 @@ with tab_network:
                         optimization_results=opt_results, highlight_paths=True,
                         commodity=st.session_state.commodity
                     )
-                    st.plotly_chart(fig, use_container_width=True, key="net_plotly")
+                    st.plotly_chart(fig, width='stretch', key="net_plotly")
             else:
                 if not (net_nodes.empty or net_edges.empty):
                     fig = services['graph'].visualize_network_interactive(
@@ -695,7 +705,7 @@ with tab_network:
                         optimization_results=opt_results, highlight_paths=True,
                         commodity=st.session_state.commodity
                     )
-                    st.plotly_chart(fig, use_container_width=True, key="net_plotly")
+                    st.plotly_chart(fig, width='stretch', key="net_plotly")
             if not net_animation_on_map:
                 _anim_fn = getattr(services['graph'], 'visualize_network_animated', None)
                 if callable(_anim_fn):
@@ -718,7 +728,7 @@ with tab_network:
                             )
                             if fig_anim:
                                 st.markdown("**Animated route per OD** — ▶ Play to see route animate.")
-                                st.plotly_chart(fig_anim, use_container_width=True, key="net_animated")
+                                st.plotly_chart(fig_anim, width='stretch', key="net_animated")
                     except (AttributeError, TypeError, KeyError, ValueError):
                         pass
         with col_n2:
