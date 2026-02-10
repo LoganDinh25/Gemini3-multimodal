@@ -6,7 +6,7 @@ Handles loading and validation of multi-region logistics data
 import pandas as pd
 import json
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 
 try:
     from coordinate_utils import convert_vn2000_to_wgs84
@@ -186,6 +186,37 @@ class DataLoader:
             print(f"Error loading Mekong data: {e}")
             return self._generate_sample_data('Mekong')
     
+    def load_baseline_results(
+        self,
+        region: str,
+        period: int,
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Load baseline solution (non-optimized) for cost comparison.
+
+        Checks: baseline_solution_period{N}.json, baseline_solution.json.
+        Returns None if not found (app may use synthetic baseline).
+        """
+        region_path = self.data_dir / region.lower().replace(' ', '_')
+        candidates = [
+            region_path / f'baseline_solution_period{period}.json',
+            region_path / 'baseline_solution.json',
+        ]
+        if region.lower() == 'mekong delta':
+            mekong = self.data_dir / 'Mekong'
+            candidates = [
+                mekong / f'baseline_solution_period{period}.json',
+                mekong / 'baseline_solution.json',
+            ] + candidates
+        for p in candidates:
+            if p.exists():
+                try:
+                    with open(p, 'r', encoding='utf-8') as f:
+                        return json.load(f)
+                except (json.JSONDecodeError, IOError):
+                    pass
+        return None
+
     def load_optimization_results(
         self, 
         region: str, 

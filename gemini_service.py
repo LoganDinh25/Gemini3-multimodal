@@ -17,6 +17,11 @@ except ImportError:
 
 from config import GEMINI_API_KEY, GEMINI_MODEL
 
+try:
+    from prompts import PROMPT_COST_SAVINGS_EXPLAIN
+except ImportError:
+    PROMPT_COST_SAVINGS_EXPLAIN = None
+
 class GeminiService:
     def __init__(self, api_key: str = None):
         """
@@ -118,6 +123,8 @@ class GeminiService:
             })
         elif "explain strategy" in si or ("explanation" in si and "strategy" in si):
             return self._generate_strategy_explanation(prompt)
+        elif "cost savings" in si or "explain cost" in si:
+            return self._generate_cost_savings_explanation(prompt)
         elif "what-if" in si or "risk analyst" in si:
             return self._generate_whatif_analysis(prompt)
         elif "logistics advisor" in si or "optimization strategies" in si:
@@ -262,7 +269,55 @@ Write for business decision-makers, not technical audiences."""
         response = self._call_gemini(context, system_instruction)
         
         return self._parse_strategy_response(response)
-    
+
+    def explain_cost_savings(
+        self,
+        cost_comparison: Dict[str, Any],
+        graph_summary: str = "",
+        scenario_context: str = "",
+    ) -> str:
+        """
+        Explain where cost savings come from using ONLY pre-computed numbers.
+
+        Cost figures must be computed by cost_engine (compute_total_cost, compare_costs).
+        Gemini only generates explanatory text; it does not calculate any numbers.
+
+        Args:
+            cost_comparison: dict with baseline, optimized, savings_abs, savings_pct
+                (and nested by_mode, by_commodity).
+            graph_summary: optional short summary of network (nodes, modes).
+            scenario_context: optional period/commodity/scenario description.
+
+        Returns:
+            Plain-text explanation (no invented figures).
+        """
+        cost_comparison_json = json.dumps(cost_comparison, indent=2)
+        graph_summary = graph_summary or "Not provided."
+        scenario_context = scenario_context or "Not provided."
+
+        if PROMPT_COST_SAVINGS_EXPLAIN:
+            prompt = PROMPT_COST_SAVINGS_EXPLAIN.format(
+                cost_comparison_json=cost_comparison_json,
+                graph_summary=graph_summary,
+                scenario_context=scenario_context,
+            )
+        else:
+            prompt = f"""Explain where the cost savings come from using ONLY these numbers. Do not invent any figures.
+
+Cost comparison:
+{cost_comparison_json}
+
+Graph summary: {graph_summary}
+Scenario: {scenario_context}
+
+Output 2-4 short paragraphs. Use only the numbers above. Plain text only."""
+
+        system_instruction = (
+            "You are a logistics analyst. Explain cost savings using ONLY the provided numbers. "
+            "Do NOT invent or recalculate any figures. Output plain text only (no JSON, no markdown)."
+        )
+        return self._call_gemini(prompt, system_instruction)
+
     def whatif_analysis(
         self,
         scenario_type: str,
@@ -445,7 +500,16 @@ Given your balanced priority setting, the strategy achieves 92% of minimum cost 
 3. **Strategic:** Invest in Hub 3 infrastructure to reduce switching time
 4. **Monitoring:** Track actual flow vs. capacity on critical edges weekly
 """
-    
+
+    def _generate_cost_savings_explanation(self, prompt: str) -> str:
+        """Mock cost savings explanation when API unavailable."""
+        return (
+            "Savings come from the pre-computed comparison: baseline vs optimized totals, "
+            "with breakdown by mode and commodity. The main drivers are typically "
+            "mode shift (e.g. more waterway use) and commodity mix. Use the exact numbers "
+            "from the comparison object in your report. (Mock response – set GEMINI_API_KEY for real explanation.)"
+        )
+
     def _parse_strategy_response(self, response: str) -> Dict[str, Any]:
         """Parse strategy explanation into structured format"""
         # In production, use more sophisticated parsing
