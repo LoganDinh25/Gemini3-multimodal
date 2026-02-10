@@ -269,7 +269,8 @@ def _update_cost_comparison(loader, region: str, period: int, optimized: dict):
     if not optimized:
         st.session_state.cost_comparison = None
         return
-    baseline_json = loader.load_baseline_results(region, period)
+    load_baseline = getattr(loader, "load_baseline_results", None)
+    baseline_json = load_baseline(region, period) if callable(load_baseline) else None
     if baseline_json is None:
         # Synthetic baseline: inflate optimized cost by 12% for demo
         import copy
