@@ -1,0 +1,13 @@
+# Optimization artifacts
+*.lp
+*.sol
+*.mps
+*.ilp
+*.sav
+
+# Gurobi logs
+gurobi.log
+
+# Large precomputed models
+models/
+outputs/

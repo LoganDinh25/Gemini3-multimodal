@@ -224,6 +224,8 @@ if 'scenario_chat_expanded' not in st.session_state:
     st.session_state.scenario_chat_expanded = False
 if 'cost_comparison' not in st.session_state:
     st.session_state.cost_comparison = None
+if 'whatif_durability_result' not in st.session_state:
+    st.session_state.whatif_durability_result = None
 
 # ============================================================================
 # HERO / HEADER - Decision Intelligence Platform
@@ -781,54 +783,101 @@ with tab_explanation:
             st.info("Load optimization results in the Scenario tab first.")
 
 # ============================================================================
-# TAB: WHAT-IF (full what-if page)
+# TAB: WHAT-IF — "Will we lose savings if conditions change?"
 # ============================================================================
 with tab_whatif:
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("""
     <div class="gemini-card">
-        <div class="gemini-header">What-If Analysis</div>
-        <div style="font-size: 1rem; opacity: 0.95;">Explore alternate scenarios with AI predictions</div>
+        <div class="gemini-header">Will we lose savings if conditions change?</div>
+        <div style="font-size: 1rem; opacity: 0.95;">Savings có bền không? Gemini dự đoán erosion & mitigation — không chạy lại solver.</div>
     </div>
     """, unsafe_allow_html=True)
+
+    cc_w = st.session_state.get("cost_comparison")
+    has_savings = cc_w and (cc_w.get("savings_abs", 0) != 0 or cc_w.get("savings_pct", 0) != 0)
+
+    # ----- Savings sensitivity summary (current savings = baseline) -----
+    st.markdown("""<div style="font-size: 1rem; font-weight: 600; color: rgba(255,255,255,0.95); margin: 0.5rem 0;">Savings sensitivity summary</div>""", unsafe_allow_html=True)
+    if cc_w:
+        sw_abs = cc_w.get("savings_abs", 0)
+        sw_pct = cc_w.get("savings_pct", 0)
+        st.markdown(
+            f"""
+            <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin-bottom: 1rem;">
+                <div style="background: rgba(248,250,252,0.98); padding: 0.75rem 1.25rem; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                    <span style="font-size: 0.8rem; color: #64748b;">Current savings (baseline)</span><br>
+                    <span style="font-size: 1.25rem; font-weight: 700; color: #16a34a;">${sw_abs:,.0f} (~{sw_pct:.1f}%)</span>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    else:
+        st.markdown("""<div style="color: rgba(255,255,255,0.8); margin-bottom: 1rem;">Chạy Scenario / Generate Plan ở tab Scenario để có baseline savings.</div>""", unsafe_allow_html=True)
+
+    # ----- Assumption controls -----
+    st.markdown("""<div style="font-size: 1rem; font-weight: 600; color: rgba(255,255,255,0.95); margin: 0.5rem 0;">Assumption controls</div>""", unsafe_allow_html=True)
     col_w1, col_w2 = st.columns([1, 2])
     with col_w1:
-        scenario_type_w = st.selectbox("Scenario Type", options=["Increase Switching Cost", "Demand Shock", "Delay Hub Upgrade", "Capacity Reduction"], key="whatif_tab_type")
+        scenario_type_w = st.selectbox(
+            "Scenario",
+            options=["Increase Switching Cost", "Demand Shock", "Delay Hub Upgrade", "Capacity Reduction"],
+            key="whatif_tab_type",
+            help="Thay đổi giả định để xem savings có bền không.",
+        )
         if scenario_type_w == "Increase Switching Cost":
-            impact_w = st.slider("Cost Increase (%)", 10, 200, 50, 10, key="whatif_tab_sw")
+            impact_w = st.slider("Switching cost increase (%)", 10, 200, 50, 10, key="whatif_tab_sw")
         elif scenario_type_w == "Demand Shock":
-            impact_w = st.slider("Demand Change (%)", -50, 100, 20, 10, key="whatif_tab_dem")
+            impact_w = st.slider("Demand change (%)", -50, 100, 20, 10, key="whatif_tab_dem")
         elif scenario_type_w == "Delay Hub Upgrade":
             impact_w = st.slider("Delay (periods)", 1, 4, 1, key="whatif_tab_del")
         else:
-            impact_w = st.slider("Capacity Reduction (%)", 10, 50, 20, 5, key="whatif_tab_cap")
-        run_w = st.button("Run What-If Analysis", type="primary", use_container_width=True, key="btn_whatif_tab")
+            impact_w = st.slider("Capacity reduction (%)", 10, 50, 20, 5, key="whatif_tab_cap")
+        run_w = st.button("Run What-If (Gemini)", type="primary", use_container_width=True, key="btn_whatif_tab")
+
     with col_w2:
-        if run_w and st.session_state.optimization_results:
-            with st.spinner("Gemini 3 reasoning..."):
-                whatif_r = services['gemini'].whatif_analysis(
+        if run_w and st.session_state.optimization_results and cc_w:
+            with st.spinner("Gemini đang dự đoán: savings có bền không..."):
+                durability = services["gemini"].whatif_savings_durability(
+                    cost_comparison=cc_w,
                     scenario_type=scenario_type_w,
                     impact_value=impact_w,
                     current_results=st.session_state.optimization_results,
-                    graph_data=services['loader'].load_region_data(st.session_state.region),
-                    commodity=st.session_state.commodity
+                    graph_data=services["loader"].load_region_data(st.session_state.region),
+                    commodity=st.session_state.commodity,
                 )
-            _desc = (whatif_r.get('scenario_description', '') or '').replace('<', '&lt;').replace('>', '&gt;')
-            st.markdown(f"""
-            <div style="background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.98); padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem;">
-                <strong>Scenario:</strong> {_desc}
-            </div>
-            """, unsafe_allow_html=True)
-            st.markdown("""<div class="custom-card" style="color: #1e293b;"><strong>Expected Impact</strong></div>""", unsafe_allow_html=True)
-            st.markdown(whatif_r.get('expected_impact', ''))
-            st.markdown("""<div class="custom-card" style="color: #1e293b;"><strong>Affected Routes</strong></div>""", unsafe_allow_html=True)
-            for item in whatif_r.get('affected_items', []):
-                st.markdown(f"""<div class="insight-warning">⚡ {item}</div>""", unsafe_allow_html=True)
-            st.markdown("""<div class="custom-card" style="color: #1e293b;"><strong>Mitigation</strong></div>""", unsafe_allow_html=True)
-            for s in whatif_r.get('mitigation', []):
-                st.markdown(f"""<div class="insight-item">✓ {s}</div>""", unsafe_allow_html=True)
-        elif not st.session_state.optimization_results:
-            st.info("Load optimization results in the Scenario tab first.")
+                st.session_state.whatif_durability_result = durability
+                st.session_state.whatif_last_scenario = (scenario_type_w, impact_w)
+        elif run_w and (not st.session_state.optimization_results or not cc_w):
+            st.warning("Cần có optimization results và cost comparison (chạy Scenario trước).")
+
+    # ----- Risk level badge (after run) -----
+    dr = st.session_state.get("whatif_durability_result")
+    if dr:
+        risk = dr.get("risk_level", "Medium")
+        risk_color = "#22c55e" if risk == "Low" else "#eab308" if risk == "Medium" else "#ef4444"
+        st.markdown(
+            f'<div style="margin-bottom: 1rem;">'
+            f'<span style="font-size: 0.85rem; color: rgba(255,255,255,0.9);">Risk level when assumptions change:</span> '
+            f'<span style="background: {risk_color}; color: white; padding: 0.25rem 0.75rem; border-radius: 6px; font-weight: 600;">{risk}</span>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+
+    # ----- Gemini Counterfactual panel -----
+    st.markdown("""<div style="font-size: 1rem; font-weight: 600; color: rgba(255,255,255,0.95); margin: 0.5rem 0;">Gemini Counterfactual</div>""", unsafe_allow_html=True)
+    st.markdown("""<div style="font-size: 0.9rem; color: rgba(255,255,255,0.8); margin-bottom: 0.75rem;">Savings sẽ bị “erode” bởi phần nào (switching, congestion, mode shift) · Mitigation (advance upgrade, allocate water capacity...)</div>""", unsafe_allow_html=True)
+    if dr:
+        st.markdown("""<div class="custom-card" style="color: #1e293b;"><strong>Savings erosion</strong></div>""", unsafe_allow_html=True)
+        st.markdown(dr.get("savings_erosion", ""))
+        st.markdown("""<div class="custom-card" style="color: #1e293b;"><strong>Mitigation</strong></div>""", unsafe_allow_html=True)
+        for s in dr.get("mitigation", []):
+            st.markdown(f"""<div class="insight-item">✓ {s}</div>""", unsafe_allow_html=True)
+    elif not st.session_state.optimization_results or not cc_w:
+        st.info("Chạy Scenario (Generate Plan) rồi bấm **Run What-If (Gemini)** để xem dự đoán.")
+    else:
+        st.caption("Bấm **Run What-If (Gemini)** để Gemini dự đoán erosion & mitigation cho scenario đã chọn.")
 
 # ============================================================================
 # FOOTER

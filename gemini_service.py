@@ -18,9 +18,10 @@ except ImportError:
 from config import GEMINI_API_KEY, GEMINI_MODEL
 
 try:
-    from prompts import PROMPT_COST_SAVINGS_EXPLAIN
+    from prompts import PROMPT_COST_SAVINGS_EXPLAIN, PROMPT_WHATIF_SAVINGS_DURABILITY
 except ImportError:
     PROMPT_COST_SAVINGS_EXPLAIN = None
+    PROMPT_WHATIF_SAVINGS_DURABILITY = None
 
 class GeminiService:
     def __init__(self, api_key: str = None):
@@ -125,6 +126,8 @@ class GeminiService:
             return self._generate_strategy_explanation(prompt)
         elif "cost savings" in si or "explain cost" in si:
             return self._generate_cost_savings_explanation(prompt)
+        elif "savings durable" in si or "durable under this scenario" in si:
+            return self._generate_savings_durability_mock(prompt)
         elif "what-if" in si or "risk analyst" in si:
             return self._generate_whatif_analysis(prompt)
         elif "logistics advisor" in si or "optimization strategies" in si:
@@ -236,7 +239,13 @@ IMPORTANT: Return ONLY a valid JSON object, no other text. Format:
         Returns:
             Dictionary with strategy_summary, reasoning, risks, recommendations
         """
-        # Prepare context for Gemini
+        # Đưa kết quả mô hình đầy đủ (có cấu trúc) để Gemini đọc và giải thích rõ
+        model_summary = self.build_model_results_for_gemini(optimization_results, max_routes=12)
+        graph_summary = (
+            f"Nodes: {self._safe_len(graph_data.get('nodes', []))} | "
+            f"Edges: {self._safe_len(graph_data.get('edges', []))} | "
+            f"Modal split: {self._analyze_modal_split(graph_data)}"
+        )
         context = f"""
 OPTIMIZATION RESULTS ANALYSIS
 
@@ -244,18 +253,11 @@ Period: {period}
 Commodity: {commodity}
 User Priority: {'Cost-focused' if priority < 0.5 else 'Speed-focused' if priority > 0.5 else 'Balanced'}
 
-Optimization Results:
-- Total Cost: ${optimization_results.get('total_cost', 0):,.0f}
-- Total Time: {optimization_results.get('total_time', 0)} days
-- Hubs Selected: {optimization_results.get('num_hubs', 0)}
-- Top Routes: {json.dumps(optimization_results.get('top_routes', [])[:3], indent=2)}
+{model_summary}
 
-Graph Structure:
-- Nodes: {self._safe_len(graph_data.get('nodes', []))}
-- Edges: {self._safe_len(graph_data.get('edges', []))}
-- Modal Split: {self._analyze_modal_split(graph_data)}
+Graph: {graph_summary}
 
-Your task: Explain this strategy from a decision-maker's perspective.
+Your task: Explain this strategy from a decision-maker's perspective. Refer to specific routes, OD pairs, and hubs by name when possible (e.g. "tuyến HCM City → Kho Cảng Cần thơ", "hub tại ..."). Be concrete, not generic.
 """
         
         system_instruction = """You are a strategic logistics advisor. Analyze the optimization results and provide:
@@ -344,6 +346,7 @@ Output 2-4 short paragraphs. Use only the numbers above. Plain text only."""
         Returns:
             Dictionary with scenario_description, expected_impact, affected_items, mitigation
         """
+        model_summary = self.build_model_results_for_gemini(current_results, max_routes=10)
         context = f"""
 WHAT-IF SCENARIO ANALYSIS
 
@@ -351,18 +354,12 @@ Scenario: {scenario_type}
 Impact Value: {impact_value}
 Commodity: {commodity}
 
-Current Strategy:
-- Total Cost: ${current_results.get('total_cost', 0):,.0f}
-- Total Time: {current_results.get('total_time', 0)} days
-- Critical Routes: {json.dumps(current_results.get('top_routes', [])[:2], indent=2)}
+Current strategy (full model output for reference):
+{model_summary}
 
-Graph Context:
-- Network has {self._safe_len(graph_data.get('nodes', []))} nodes
-- {self._safe_len(graph_data.get('edges', []))} connections
-- {self._count_modes(graph_data)} transport modes available
+Graph: {self._safe_len(graph_data.get('nodes', []))} nodes, {self._safe_len(graph_data.get('edges', []))} edges, {self._count_modes(graph_data)} modes.
 
-Your task: Reason about the impact of this scenario on the current strategy.
-DO NOT re-optimize. Use graph reasoning and domain knowledge.
+Your task: Reason about the impact of this scenario on the current strategy. Refer to specific routes and hubs by name when naming affected items. DO NOT re-optimize.
 """
         
         system_instruction = """You are a logistics risk analyst. For the given what-if scenario:
@@ -376,7 +373,151 @@ Focus on practical insights based on graph structure and logistics principles.""
         response = self._call_gemini(context, system_instruction)
         
         return self._parse_whatif_response(response, scenario_type, impact_value)
-    
+
+    def whatif_savings_durability(
+        self,
+        cost_comparison: Dict[str, Any],
+        scenario_type: str,
+        impact_value: float,
+        current_results: Dict[str, Any],
+        graph_data: Dict[str, Any],
+        commodity: str,
+    ) -> Dict[str, Any]:
+        """
+        What-if: "Will we lose savings if conditions change?" — no solver re-run.
+        Returns risk_level (Low/Medium/High), savings_erosion text, mitigation list.
+        """
+        cost_comparison_json = json.dumps(cost_comparison, indent=2)
+        total_cost = float(current_results.get("total_cost", 0))
+        num_hubs = current_results.get("num_hubs", 0)
+        routes = current_results.get("top_routes") or []
+        num_routes = len(routes)
+        modal_summary = self._analyze_modal_split(graph_data)
+        graph_summary = f"{self._safe_len(graph_data.get('nodes', []))} nodes, {self._safe_len(graph_data.get('edges', []))} edges"
+        model_summary_short = self.build_model_results_for_gemini(current_results, max_routes=6)
+
+        if PROMPT_WHATIF_SAVINGS_DURABILITY:
+            prompt = PROMPT_WHATIF_SAVINGS_DURABILITY.format(
+                cost_comparison_json=cost_comparison_json,
+                scenario_type=scenario_type,
+                impact_value=impact_value,
+                commodity=commodity,
+                total_cost=total_cost,
+                num_hubs=num_hubs,
+                num_routes=num_routes,
+                modal_summary=modal_summary,
+                graph_summary=graph_summary,
+            )
+            prompt = prompt + "\n\n--- Model output (for reference, refer to specific routes/hubs by name) ---\n" + model_summary_short
+        else:
+            prompt = f"Cost comparison:\n{cost_comparison_json}\n\nScenario: {scenario_type} = {impact_value}. Commodity: {commodity}. Explain savings erosion and mitigation. Use RISK_LEVEL:, SAVINGS_EROSION:, MITIGATION: sections.\n\n{model_summary_short}"
+
+        system_instruction = (
+            "You are a logistics risk analyst. Answer: is current savings durable under this scenario? "
+            "Output RISK_LEVEL: (Low|Medium|High), then SAVINGS_EROSION: (paragraphs), then MITIGATION: (bullet list). Do NOT re-run any solver."
+        )
+        response = self._call_gemini(prompt, system_instruction)
+        return self._parse_savings_durability_response(response)
+
+    def _parse_savings_durability_response(self, response: str) -> Dict[str, Any]:
+        """Extract risk_level, savings_erosion, mitigation from Gemini reply."""
+        risk_level = "Medium"
+        erosion = ""
+        mitigation = []
+
+        if "RISK_LEVEL:" in response:
+            line = response.split("RISK_LEVEL:")[1].strip().split("\n")[0].strip().upper()
+            if "HIGH" in line:
+                risk_level = "High"
+            elif "LOW" in line:
+                risk_level = "Low"
+            else:
+                risk_level = "Medium"
+
+        if "SAVINGS_EROSION:" in response:
+            parts = response.split("SAVINGS_EROSION:")[1]
+            if "MITIGATION:" in parts:
+                erosion = parts.split("MITIGATION:")[0].strip()
+            else:
+                erosion = parts.strip()
+
+        if "MITIGATION:" in response:
+            block = response.split("MITIGATION:")[1].strip()
+            for line in block.replace("\r", "\n").split("\n"):
+                line = line.strip().lstrip("-•* ").strip()
+                if line and len(line) > 5:
+                    mitigation.append(line)
+
+        if not erosion:
+            erosion = "Savings may be eroded by higher switching costs, congestion, or mode shift under this scenario. Multi-modal routes are most exposed."
+        if not mitigation:
+            mitigation = [
+                "Negotiate long-term transfer contracts",
+                "Advance hub upgrade where switching is concentrated",
+                "Allocate water capacity for key corridors",
+            ]
+
+        return {
+            "risk_level": risk_level,
+            "savings_erosion": erosion,
+            "mitigation": mitigation[:8],
+        }
+
+    # ========================================================================
+    # HELPER: Chuẩn hóa kết quả mô hình để Gemini đọc và giải thích rõ ràng
+    # ========================================================================
+
+    def build_model_results_for_gemini(
+        self,
+        optimization_results: Dict[str, Any],
+        max_routes: int = 12,
+    ) -> str:
+        """
+        Tạo bản tóm tắt kết quả chạy mô hình (có cấu trúc) để Gemini đọc.
+        Bao gồm: số liệu tổng, danh sách hub, từng tuyến với tên OD, mode, cost, flow.
+        Gemini dùng để đưa ra giải thích cụ thể (tuyến nào, cặp nào, hub nào).
+        """
+        if not optimization_results:
+            return "No optimization results available."
+        total_cost = optimization_results.get("total_cost", 0)
+        total_time = optimization_results.get("total_time", 0)
+        num_hubs = optimization_results.get("num_hubs", 0)
+        selected_hubs = optimization_results.get("selected_hubs", [])
+        total_demand = optimization_results.get("total_demand", 0)
+        region = optimization_results.get("region", "")
+        period = optimization_results.get("period", "")
+        routes = optimization_results.get("top_routes") or []
+        num_routes = len(routes)
+
+        lines = [
+            "=== KẾT QUẢ CHẠY MÔ HÌNH (Model output) ===",
+            f"Region: {region} | Period: {period}",
+            f"Total cost: ${float(total_cost):,.0f}",
+            f"Total time: {float(total_time):,.1f} (days or equivalent)",
+            f"Total demand: {float(total_demand):,.0f}",
+            f"Number of hubs selected: {num_hubs}",
+            f"Selected hub IDs: {selected_hubs[:20]}{'...' if len(selected_hubs) > 20 else ''}",
+            f"Number of routes (OD pairs): {num_routes}",
+            "",
+            "--- Chi tiết từng tuyến (route) ---",
+        ]
+        for i, r in enumerate(routes[:max_routes]):
+            origin_name = r.get("origin_name") or r.get("path_labels", [None])[0] or f"Node {r.get('origin', '?')}"
+            dest_name = r.get("destination_name") or (r.get("path_labels") or [None])[-1] or f"Node {r.get('destination', '?')}"
+            path_labels = r.get("path_labels")
+            path_str = " → ".join(str(x) for x in (path_labels if path_labels else r.get("path", [])))
+            mode = r.get("mode", "?")
+            commodity = r.get("commodity", "?")
+            cost = float(r.get("cost", 0))
+            flow = float(r.get("flow", 0))
+            od = r.get("od_pair", [])
+            lines.append(
+                f"Route {i+1}: {origin_name} → {dest_name} | mode: {mode} | commodity: {commodity} | cost: ${cost:,.0f} | flow: {flow:,.0f} | path: {path_str}"
+            )
+        if len(routes) > max_routes:
+            lines.append(f"... and {len(routes) - max_routes} more routes.")
+        return "\n".join(lines)
+
     # ========================================================================
     # HELPER METHODS
     # ========================================================================
@@ -531,6 +672,23 @@ Given your balanced priority setting, the strategy achieves 92% of minimum cost 
             ]
         }
     
+    def _generate_savings_durability_mock(self, prompt: str) -> str:
+        """Mock for whatif_savings_durability (RISK_LEVEL / SAVINGS_EROSION / MITIGATION)."""
+        return """RISK_LEVEL: Medium
+
+SAVINGS_EROSION:
+Current savings are partly at risk if conditions change. Switching cost increase would hit multi-modal routes first: each extra transfer adds cost, so the gap between baseline and optimized narrows. Congestion or capacity cuts on key water links would push flow to road and erode the savings from water-heavy routing. Mode shift (e.g. road becoming relatively cheaper) would reduce the benefit of the current modal mix.
+
+Under the scenario you selected, expect savings to erode mainly from the switching-cost and mode-shift channels; congestion matters more if demand or capacity change is large.
+
+MITIGATION:
+- Lock in transfer contracts at current hubs to cap switching cost exposure
+- Advance hub upgrade where switching is concentrated
+- Allocate and reserve water capacity for priority corridors
+- Add backup single-mode routes for highest-volume ODs
+- Monitor demand and capacity; trigger contingency routing if thresholds are hit
+"""
+
     def _generate_whatif_analysis(self, prompt: str) -> str:
         """Generate mock what-if analysis"""
         return """
@@ -592,11 +750,9 @@ If switching costs increase by 50%, the current multi-modal strategy will face s
         if context:
             if 'optimization_results' in context:
                 results = context['optimization_results']
-                context_str += f"\n\nCurrent Optimization Results:\n"
-                context_str += f"- Total Cost: ${results.get('total_cost', 0):,.0f}\n"
-                context_str += f"- Total Time: {results.get('total_time', 0)} days\n"
-                context_str += f"- Hubs Selected: {results.get('selected_hubs', [])}\n"
-                context_str += f"- Top Routes: {len(results.get('top_routes', []))} routes\n"
+                context_str += "\n\nCurrent Optimization Results (full model output for reference):\n"
+                context_str += self.build_model_results_for_gemini(results, max_routes=10)
+                context_str += "\n"
             
             if 'graph_data' in context:
                 graph = context['graph_data']
